@@ -1,0 +1,51 @@
+{
+  "name": "wedding-live-backend",
+  "version": "1.0.0",
+  "description": "wedding live",
+  "main": "app.js",
+  "scripts": {
+    "start": "nodemon app.js --exec babel-node",
+    "test": "NODE_ENV=unittest mocha --exit --require babel-register",
+    "wtest": "SET NODE_ENV=unittest&&mocha --exit --require babel-register"
+  },
+  "keywords": [
+    "live"
+  ],
+  "author": "qillk",
+  "license": "ISC",
+  "devDependencies": {
+    "babel-plugin-transform-runtime": "^6.23.0",
+    "babel-preset-env": "^1.6.1",
+    "babel-preset-stage-0": "^6.24.1",
+    "babel-register": "^6.26.0",
+    "eslint": "^4.19.1",
+    "eslint-config-standard": "^11.0.0",
+    "eslint-plugin-import": "^2.12.0",
+    "eslint-plugin-node": "^6.0.1",
+    "eslint-plugin-promise": "^3.7.0",
+    "eslint-plugin-standard": "^3.1.0",
+    "nodemon": "^1.17.4",
+    "power-assert": "^1.5.0",
+    "supertest": "^3.1.0"
+  },
+  "dependencies": {
+    "babel-runtime": "^6.26.0",
+    "bcrypt": "^2.0.1",
+    "busboy": "^0.2.14",
+    "jsonwebtoken": "^8.1.0",
+    "kcors": "^2.2.1",
+    "koa": "^2.4.1",
+    "koa-body": "^2.5.0",
+    "koa-json": "^2.0.2",
+    "koa-jwt": "^3.3.0",
+    "koa-logger": "^3.1.0",
+    "koa-parameter": "^3.0.1",
+    "koa-router": "^7.3.0",
+    "koa-static": "^4.0.2",
+    "lodash": "^4.17.10",
+    "nconf": "^0.10.0",
+    "pg": "^7.4.3",
+    "pg-hstore": "^2.3.2",
+    "sequelize": "^4.37.7"
+  }
+}

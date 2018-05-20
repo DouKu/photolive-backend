@@ -1,0 +1,4 @@
+.vscode
+sql/.vscode
+config/env
+/package-lock.json

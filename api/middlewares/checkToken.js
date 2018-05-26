@@ -1,5 +1,5 @@
 'use strict';
-import Users from '../models/users';
+import Users from '../models/Users';
 
 // 检查token
 export default () => {
@@ -8,7 +8,7 @@ export default () => {
     if (token) {
       const user = await Users.checkToken(token);
       if (user) {
-        ctx.state.userMess = user.toObject();
+        ctx.state.userMess = user;
         await next();
       } else {
         ctx.throw(501, 'token信息异常');

@@ -1,10 +1,11 @@
 'use strict';
 import { request } from '../bootstrap.test';
 import assert from 'power-assert';
+import Users from '../../api/models/Users';
 
 describe('Controller: user', () => {
   let user = null;
-  it.skip('login', async () => {
+  it('login', async () => {
     user = await request
       .post('/api/v1/login')
       .send({
@@ -14,19 +15,18 @@ describe('Controller: user', () => {
       .expect(200);
 
     console.log(user.body);
-    assert(user !== null);
   });
   it('register', async () => {
-    const result = await request
+    await request
       .post('/api/v1/register')
       .send({
-        phone: '123456789',
-        username: '123456789',
+        username: '222222222',
         password: '123456789',
-        nickname: 'lalalala'
-      });
+        nickname: 'qqqqq'
+      })
+      .expect(200);
 
-    console.log(result.body);
-    assert(result.body.code === 200);
+    const newUser = await Users.findOne({ raw: true, where: { username: '222222222' } });
+    assert(newUser !== null);
   });
 });

@@ -7,7 +7,7 @@ const signToken = user => {
   const token = jwt.sign(
     {
       id: user.id,
-      secret: user.appSecret
+      secret: user.app_secret
     },
     nconf.get('jwt_secret'),
     { expiresIn: '24h' }

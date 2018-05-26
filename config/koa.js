@@ -10,7 +10,7 @@ import koaBody from 'koa-body';
 import serve from 'koa-static';
 import { join } from 'path';
 import routes from '../routes/index';
-import { client } from './sequelize';
+import sequelize from './sequelize';
 const app = module.exports = new Koa();
 
 app.use(koaBody());
@@ -34,9 +34,10 @@ app.use(
 app.use(routes.routes(), routes.allowedMethods());
 
 if (nconf.get('NODE_ENV') !== 'unittest') {
-  client.sync()
+  sequelize.sync()
     .then(connection => {
       if (connection) {
+        console.log('sequelize connection success!');
         app.listen(nconf.get('port') || 8426, nconf.get('host'), () => {
           console.log(
             `\x1b[33m%s\x1b[0m`,

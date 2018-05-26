@@ -1,7 +1,5 @@
 'use strict';
 import nconf from 'nconf';
-import fs from 'fs';
-import path from 'path';
 import Sequelize from 'sequelize';
 const Op = Sequelize.Op;
 const operatorsAliases = {
@@ -41,7 +39,7 @@ const operatorsAliases = {
   $col: Op.col
 };
 
-const client = new Sequelize(
+const sequelize = new Sequelize(
   nconf.get('postgres:database'),
   nconf.get('postgres:username'),
   nconf.get('postgres:pass'),
@@ -50,24 +48,4 @@ const client = new Sequelize(
   })
 );
 
-const models = {};
-
-fs.readdirSync(path.join(__dirname, '../api/models'))
-  .filter(function (file) {
-    return (file.indexOf('.') !== 0) && (file !== 'index.js');
-  })
-  .forEach(function (file) {
-    const model = client.import(path.join(__dirname, '../api/models', file));
-    models[model.name] = model;
-  });
-
-Object.keys(models).forEach((modelName) => {
-  if (models[modelName].options.hasOwnProperty('associate')) {
-    models[modelName].options.associate(models);
-  }
-});
-
-export {
-  models,
-  client
-};
+export default sequelize;

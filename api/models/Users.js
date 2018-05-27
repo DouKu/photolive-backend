@@ -65,7 +65,6 @@ const Users = sequelize.define(
       defaultValue: NOW
     } // 注册时间
   }, {
-    tableName: 'users',
     hooks: {
       beforeCreate: (user, option) => {
         // 哈希密码，生成app_secret
@@ -96,6 +95,10 @@ function GetHmac (params) {
   hmac.update(Date.now().toString());
   return hmac.digest('hex');
 }
+
+Users.associate = function (model) {
+  Users.hasMany(model.Activities, { foreignKey: 'user_id' });
+};
 
 Users.checkToken = async function (token) {
   const user = await this.findById(token.id);

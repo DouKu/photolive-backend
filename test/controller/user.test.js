@@ -1,7 +1,7 @@
 'use strict';
 import { request } from '../bootstrap.test';
 import assert from 'power-assert';
-import Users from '../../api/models/Users';
+import { Models } from '../../config/sequelize';
 
 describe('Controller: user', () => {
   let user = null;
@@ -14,7 +14,7 @@ describe('Controller: user', () => {
       })
       .expect(200);
 
-    console.log(user.body);
+    assert(user.body.token !== null);
   });
   it('register', async () => {
     await request
@@ -26,7 +26,10 @@ describe('Controller: user', () => {
       })
       .expect(200);
 
-    const newUser = await Users.findOne({ raw: true, where: { username: '222222222' } });
+    const newUser = await Models.Users.findOne({
+      raw: true,
+      where: { username: '222222222' }
+    });
     assert(newUser !== null);
   });
 });

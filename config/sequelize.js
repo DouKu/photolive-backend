@@ -1,4 +1,6 @@
 'use strict';
+import fs from 'fs';
+import path from 'path';
 import nconf from 'nconf';
 import Sequelize from 'sequelize';
 const Op = Sequelize.Op;
@@ -48,4 +50,29 @@ const sequelize = new Sequelize(
   })
 );
 
-export default sequelize;
+const Models = {};
+const modelDir = path.join(__dirname, '../api/models/');
+
+fs
+  .readdirSync(modelDir)
+  .filter(file => {
+    return (file.indexOf('.') !== 0) && (file.slice(-3) === '.js');
+  })
+  .forEach(file => {
+    const model = sequelize['import'](path.join(modelDir, file));
+    Models[model.name] = model;
+  });
+
+Object.keys(Models).forEach(modelName => {
+  if (Models[modelName].associate) {
+    Models[modelName].associate(Models);
+  }
+});
+
+Models.sequelize = sequelize;
+Models.Sequelize = Sequelize;
+
+export {
+  sequelize,
+  Models
+};

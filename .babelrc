@@ -9,6 +9,7 @@
         "polyfill": false,
         "regenerator": true
       }
-    ]
+    ],
+    "babel-plugin-espower"
   ]
 }

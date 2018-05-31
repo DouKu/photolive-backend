@@ -35,6 +35,7 @@ managerRouter.use(checkToken());
 
 /** 路由编写 */
 require('./user')(router, authRouter, commonRouter, managerRouter);
+require('./activity')(router, authRouter, commonRouter, managerRouter);
 
 /** 整合路由 */
 router.use(commonRouter.routes(), commonRouter.allowedMethods());

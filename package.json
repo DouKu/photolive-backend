@@ -14,6 +14,7 @@
   "author": "qillk",
   "license": "ISC",
   "devDependencies": {
+    "babel-plugin-espower": "^2.3.2",
     "babel-plugin-transform-runtime": "^6.23.0",
     "babel-preset-env": "^1.6.1",
     "babel-preset-stage-0": "^6.24.1",
@@ -24,6 +25,7 @@
     "eslint-plugin-node": "^6.0.1",
     "eslint-plugin-promise": "^3.7.0",
     "eslint-plugin-standard": "^3.1.0",
+    "intelli-espower-loader": "^1.0.1",
     "nodemon": "^1.17.4",
     "power-assert": "^1.5.0",
     "supertest": "^3.1.0"
@@ -43,6 +45,7 @@
     "koa-router": "^7.3.0",
     "koa-static": "^4.0.2",
     "lodash": "^4.17.10",
+    "moment": "^2.22.1",
     "nconf": "^0.10.0",
     "pg": "^7.4.3",
     "pg-hstore": "^2.3.2",

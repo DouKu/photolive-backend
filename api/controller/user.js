@@ -1,6 +1,6 @@
 'use strict';
 import _ from 'lodash';
-import Users from '../models/Users';
+import { Models } from '../../config/sequelize';
 import { signToken } from '../service/base';
 
 const login = async ctx => {
@@ -9,7 +9,7 @@ const login = async ctx => {
     password: 'string'
   });
   const body = ctx.request.body;
-  let user = await Users.findOne({ where: { username: body.username } });
+  let user = await Models.Users.findOne({ where: { username: body.username } });
   const isMatch = await user.comparePassword(body.password);
   if (!isMatch) {
     ctx.throw(423, '用户名或密码错误！');
@@ -32,14 +32,14 @@ const register = async ctx => {
     email: { type: 'string', required: false }
   });
   const body = ctx.request.body;
-  const userCheck = await Users.findOne({
+  const userCheck = await Models.Users.findOne({
     raw: true,
     where: { username: body.username }
   });
   if (userCheck) {
     ctx.throw(400, '该用户已存在！');
   }
-  await Users.create(body);
+  await Models.Users.create(body);
   ctx.body = {
     code: 200,
     msg: '注册成功!'

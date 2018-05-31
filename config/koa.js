@@ -10,7 +10,7 @@ import koaBody from 'koa-body';
 import serve from 'koa-static';
 import { join } from 'path';
 import routes from '../routes/index';
-import sequelize from './sequelize';
+import { sequelize } from './sequelize';
 const app = module.exports = new Koa();
 
 app.use(koaBody());

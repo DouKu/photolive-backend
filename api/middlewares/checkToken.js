@@ -1,12 +1,12 @@
 'use strict';
-import Users from '../models/Users';
+import { Models } from '../../config/sequelize';
 
 // 检查token
 export default () => {
   return async (ctx, next) => {
     const token = ctx.state.user;
     if (token) {
-      const user = await Users.checkToken(token);
+      const user = await Models.Users.checkToken(token);
       if (user) {
         ctx.state.userMess = user;
         await next();

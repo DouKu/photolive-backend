@@ -1,1 +1,2 @@
 config/env/*
+test/controller/qiniu.test.js

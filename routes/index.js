@@ -36,9 +36,11 @@ managerRouter.use(checkToken());
 /** 路由编写 */
 require('./user')(router, authRouter, commonRouter, managerRouter);
 require('./activity')(router, authRouter, commonRouter, managerRouter);
+require('./qiniu')(router, authRouter, commonRouter, managerRouter);
 
 /** 整合路由 */
 router.use(commonRouter.routes(), commonRouter.allowedMethods());
 router.use(authRouter.routes(), authRouter.allowedMethods());
 router.use(managerRouter.routes(), managerRouter.allowedMethods());
+
 export default router;

@@ -18,11 +18,16 @@ export default (sequelize, DataTypes) => {
         type: INTEGER,
         allowNull: false
       }, // 标签关联
-      url: {
+      thumbnail_url: {
         type: STRING(512),
         allowNull: false,
         defaultValue: ''
-      }, // 图片url
+      }, // 压缩图url
+      origin_url: {
+        type: STRING(512),
+        allowNull: false,
+        defaultValue: ''
+      }, // 原图url
       des: {
         type: STRING(30),
         allowNull: false,

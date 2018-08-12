@@ -10,6 +10,27 @@ const addTag = async ctx => {
   await Models.Tags.create(body);
 };
 
+const deleteTag = async ctx => {
+  const tagId = ctx.params.tagId;
+  const imgChcek = await Models.Images.findOne({
+    include: [{
+      model: Models.Tags,
+      where: { id: tagId }
+    }]
+  });
+  if (imgChcek) {
+    ctx.throw(400, '有图片处于该标签下，请把该标签下的所有图片修改后再删除该标签');
+  }
+  await Models.Tags.destroy({
+    where: { id: tagId }
+  });
+  ctx.body = {
+    code: 200,
+    msg: '标签删除成功！'
+  };
+};
+
 export {
-  addTag
+  addTag,
+  deleteTag
 };

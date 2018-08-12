@@ -1,6 +1,8 @@
 'use strict';
 import '../config/nconf';
 import path from 'path';
+import fs from 'fs';
+import nconf from 'nconf';
 import app from '../config/koa';
 import { Models, sequelize } from '../config/sequelize';
 const request = require('supertest').agent(app.callback());
@@ -10,20 +12,51 @@ describe('init db', () => {
   it('', async () => {
     const connection = await sequelize.sync({ force: true, hooks: true });
     if (connection) {
-      const fileNames = ['Users', 'Activities', 'Tags', 'Images'];
-      for (let i = 0; i < fileNames.length; i++) {
-        // 导入模型与fixture数据然后插入数据
-        const file = fileNames[i] + '.js';
-        const fixtures = require(path.join(__dirname, './fixtures', file));
-        for (let item of fixtures.default) {
-          await Models[fileNames[i]].create(item);
+      // 需要获取所有的
+      const modelFiles = await readdirAsync(nconf.get('rootDir') + 'api/models/');
+      let models = [];
+      for (let file of modelFiles) {
+        if (file.indexOf('.') !== 0 && file.slice(-3) === '.js' && file !== 'index.js') {
+          models.push(file);
         }
+      }
+      models = sort(models);
+      console.log(models);
+      for (let file of models) {
+        const fileName = file.slice(0, -3);
+        const fixtures = require(path.join(__dirname, './fixtures', file));
+        await Models[fileName].bulkCreate(fixtures.default);
       }
     } else {
       console.log('connection error');
     }
   });
 });
+
+function readdirAsync (path) {
+  return new Promise(function (resolve, reject) {
+    fs.readdir(path, function (error, result) {
+      if (error) {
+        reject(error);
+      } else {
+        resolve(result);
+      }
+    });
+  });
+}
+
+// 把需要先mork的表放前面
+function sort (files) {
+  const frontFiles = ['Users.js', 'Albums.js'];
+  for (let item of frontFiles) {
+    for (let p = 0; p < files.length; p++) {
+      if (files[p] === item) {
+        files.splice(p, 1);
+      }
+    }
+  }
+  return frontFiles.concat(files);
+}
 
 export {
   request

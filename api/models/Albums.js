@@ -2,8 +2,8 @@
 import { STRING, INTEGER, DATE, NOW, JSONB, ARRAY } from 'sequelize';
 
 export default (sequelize, DataTypes) => {
-  const Activities = sequelize.define(
-    'Activities',
+  const Albums = sequelize.define(
+    'Albums',
     {
       id: {
         type: INTEGER,
@@ -24,8 +24,8 @@ export default (sequelize, DataTypes) => {
         allowNull: false,
         defaultValue: ''
       }, // 活动封面图
-      bannsers: {
-        type: ARRAY,
+      banners: {
+        type: ARRAY(STRING(512)),
         allowNull: false,
         defaultValue: []
       }, // banner url
@@ -77,11 +77,11 @@ export default (sequelize, DataTypes) => {
     }, {}
   );
 
-  Activities.associate = Models => {
-    Models.Activities.hasMany(Models.Tags, { foreignKey: 'activity_id' });
-    Models.Activities.hasMany(Models.Images, { foreignKey: 'activity_id' });
-    Models.Activities.belongsTo(Models.Users, { foreignKey: 'user_id' });
+  Albums.associate = Models => {
+    Models.Albums.hasMany(Models.Tags, { foreignKey: 'album_id' });
+    Models.Albums.hasMany(Models.Images, { foreignKey: 'album_id' });
+    Models.Albums.belongsTo(Models.Users, { foreignKey: 'user_id' });
   };
 
-  return Activities;
+  return Albums;
 };

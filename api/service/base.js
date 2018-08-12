@@ -16,10 +16,10 @@ const signToken = user => {
 };
 
 // 检查并且更新token
-const checkToken = async (ctx, Users, getUser) => {
+const checkToken = async (ctx, User, getUser) => {
   const token = ctx.state.user;
   if (token) {
-    const user = await Users.checkAndUpdateToken(token);
+    const user = await User.checkAndUpdateToken(token);
     if (user) {
       if (getUser) {
         return user;

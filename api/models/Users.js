@@ -18,12 +18,12 @@ export default (sequelize, DataTypes) => {
         allowNull: false,
         defaultValue: ''
       }, // 电话
-      username: {
+      account: {
         type: STRING(50),
         allowNull: false,
         unique: true,
         defaultValue: ''
-      }, // 登录名
+      }, // 账户
       password: {
         type: STRING(512),
         allowNull: false,
@@ -59,7 +59,7 @@ export default (sequelize, DataTypes) => {
         allowNull: false,
         defaultValue: '这个人很懒，什么都没有记录。。。'
       }, // 个性签名
-      created_at: {
+      register_at: {
         type: DATE,
         allowNull: false,
         defaultValue: NOW
@@ -84,7 +84,7 @@ export default (sequelize, DataTypes) => {
       indexes: [
         {
           method: 'BTREE',
-          fields: ['phone', 'username']
+          fields: ['phone', 'account']
         }
       ]
     }
@@ -97,7 +97,7 @@ export default (sequelize, DataTypes) => {
   }
 
   Users.associate = Models => {
-    Models.Users.hasMany(Models.Activities, { foreignKey: 'user_id' });
+    Models.Users.hasMany(Models.Albums, { foreignKey: 'user_id' });
   };
 
   Users.checkToken = async function (token) {

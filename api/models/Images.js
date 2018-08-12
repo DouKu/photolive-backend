@@ -10,7 +10,7 @@ export default (sequelize, DataTypes) => {
         primaryKey: true,
         autoIncrement: true
       }, // 用户id
-      activity_id: {
+      album_id: {
         type: INTEGER,
         allowNull: false
       }, // 活动关联
@@ -42,7 +42,7 @@ export default (sequelize, DataTypes) => {
   );
 
   Images.associate = Models => {
-    Models.Images.belongsTo(Models.Activities, { foreignKey: 'activity_id' });
+    Models.Images.belongsTo(Models.Albums, { foreignKey: 'album_id' });
     Models.Images.belongsTo(Models.Tags, { foreignKey: 'tag_id' });
   };
   return Images;

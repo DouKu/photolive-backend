@@ -35,7 +35,7 @@ managerRouter.use(checkToken());
 
 /** 路由编写 */
 require('./user')(router, authRouter, commonRouter, managerRouter);
-require('./activity')(router, authRouter, commonRouter, managerRouter);
+require('./album')(router, authRouter, commonRouter, managerRouter);
 require('./qiniu')(router, authRouter, commonRouter, managerRouter);
 
 /** 整合路由 */

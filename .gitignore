@@ -1,5 +1,5 @@
 .vscode
-sql/.vscode
+sql
 config/env
 node_modules
 /package-lock.json

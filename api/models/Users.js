@@ -84,7 +84,7 @@ export default (sequelize, DataTypes) => {
       indexes: [
         {
           method: 'BTREE',
-          fields: ['phone', 'account']
+          fields: ['phone', 'account', 'email']
         }
       ]
     }

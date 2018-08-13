@@ -1,5 +1,6 @@
 'use strict';
 import { STRING, INTEGER, DATE, NOW, JSONB, ARRAY } from 'sequelize';
+import nconf from 'nconf';
 
 export default (sequelize, DataTypes) => {
   const Albums = sequelize.define(
@@ -14,21 +15,26 @@ export default (sequelize, DataTypes) => {
         type: INTEGER,
         allowNull: false
       }, // 用户id
+      album_type: {
+        type: INTEGER,
+        allowNull: false,
+        defaultValue: nconf.get('albumAccess:normal').type
+      }, // 相册服务类别()
+      css_type: {
+        type: INTEGER,
+        allowNull: false,
+        defaultValue: 1
+      }, // 相册样式类别
       name: {
         type: STRING(50),
         allowNull: false,
         defaultValue: ''
-      }, // 活动名
+      }, // 活动名(相册名)
       avatar: {
         type: STRING(512),
         allowNull: false,
         defaultValue: ''
       }, // 活动封面图
-      banners: {
-        type: ARRAY(STRING(512)),
-        allowNull: false,
-        defaultValue: []
-      }, // banner url
       activity_time: {
         type: DATE,
         allowNull: false,
@@ -39,16 +45,41 @@ export default (sequelize, DataTypes) => {
         allowNull: false,
         defaultValue: ''
       }, // 活动地点
-      album_type: {
-        type: INTEGER,
+      top_ad: {
+        type: STRING(80),
         allowNull: false,
-        defaultValue: 0
-      }, // 相册服务类别()
-      css_type: {
-        type: INTEGER,
+        defaultValue: ''
+      }, // 顶部广告
+      bottom_ad: {
+        type: STRING(80),
         allowNull: false,
-        defaultValue: 1
-      }, // 相册样式类别
+        defaultValue: ''
+      }, // 底部广告文案
+      bottom_ad_link: {
+        type: STRING(500),
+        allowNull: false,
+        defaultValue: ''
+      }, // 广告文案连接
+      banners: {
+        type: ARRAY(STRING(512)),
+        allowNull: false,
+        defaultValue: []
+      }, // banner url
+      share_avatar: {
+        type: STRING(500),
+        allowNull: false,
+        defaultValue: ''
+      }, // 分享图片
+      share_title: {
+        type: STRING(50),
+        allowNull: false,
+        defaultValue: ''
+      }, // 分享标题
+      share_des: {
+        type: STRING(100),
+        allowNull: false,
+        defaultValue: ''
+      }, // 分享描述
       interactive_setting: {
         type: JSONB,
         allowNull: false,

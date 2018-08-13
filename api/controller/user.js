@@ -25,8 +25,22 @@ const accountLogin = async ctx => {
 };
 
 const emailLogin = async ctx => {
+  ctx.verifyParams({
+    email: 'email',
+    password: 'string'
+  });
+  const body = ctx.request.body;
+  let user = await Models.User.findOne({ where: { email: body.email } });
+  const isMatch = await user.comparePassword(body.password);
+  if (!isMatch) {
+    ctx.throw(423, '邮箱或密码错误！');
+  }
+  user = user.dataValues;
+  const token = signToken(user);
   ctx.body = {
-    code: 200
+    code: 200,
+    token,
+    user
   };
 };
 
@@ -38,15 +52,20 @@ const phoneLogin = async ctx => {
 
 const register = async ctx => {
   ctx.verifyParams({
-    account: 'string',
+    account: { type: 'string', required: false },
     password: 'string',
+    real_name: { type: 'string', required: false },
+    phone: { type: 'string', required: false },
     nickname: { type: 'string', required: false },
     email: { type: 'string', required: false }
   });
   const body = ctx.request.body;
+  if (!checkUserRegisterParams(body)) {
+    ctx.throw(423, '请检查注册信息栏，填写好对应信息');
+  }
   const userCheck = await Models.User.findOne({
     raw: true,
-    where: { account: body.username }
+    where: { account: body.account }
   });
   if (userCheck) {
     ctx.throw(400, '该用户已存在！');
@@ -58,9 +77,42 @@ const register = async ctx => {
   };
 };
 
+const checkAccountExist = async ctx => {
+  ctx.verifyParams({
+    account: 'string'
+  });
+  const body = ctx.request.body;
+  const userCheck = await Models.User.findOne({
+    raw: true,
+    where: { account: body.account }
+  });
+  if (userCheck) {
+    ctx.body = {
+      code: 200,
+      exist: true
+    };
+  } else {
+    ctx.body = {
+      code: 200,
+      exist: false
+    };
+  }
+};
+
+function checkUserRegisterParams (Obj) {
+  const field = ['account', 'email', 'phone'];
+  for (let item of field) {
+    if (_.has(Obj, item)) {
+      return true;
+    }
+  }
+  return false;
+}
+
 export {
   accountLogin,
   emailLogin,
   phoneLogin,
-  register
+  register,
+  checkAccountExist
 };

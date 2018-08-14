@@ -46,7 +46,7 @@ const albumBaseCfg = async ctx => {
     where: { id: albumId }
   });
   checkBaseCfg(albumObj, ctx);
-  await Models.Albums.findOneAndUpdate(body, {
+  await Models.Albums.update(body, {
     where: { id: albumId }
   });
   ctx.body = {
@@ -67,7 +67,7 @@ const albumShareCfg = async ctx => {
   });
   checkShareCfg(albumObj, ctx);
   checkAlbumOwner(albumObj, ctx);
-  await Models.Albums.findOneAndUpdate(body, {
+  await Models.Albums.update(body, {
     where: { id: albumId }
   });
   ctx.body = {
@@ -85,7 +85,7 @@ const albumBannerCfg = async ctx => {
     where: { id: albumId }
   });
   checkBannerCfg(albumObj, body.banners, ctx);
-  await Models.Albums.findOneAndUpdate(body, {
+  await Models.Albums.update(body, {
     where: { id: albumId }
   });
   ctx.body = {

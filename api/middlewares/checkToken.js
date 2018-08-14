@@ -6,7 +6,7 @@ export default () => {
   return async (ctx, next) => {
     const token = ctx.state.user;
     if (token) {
-      const user = await Models.User.checkToken(token);
+      const user = await Models.Users.checkToken(token);
       if (user) {
         ctx.state.userMess = user;
         await next();

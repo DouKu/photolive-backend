@@ -25,7 +25,9 @@ describe('init db', () => {
       for (let file of models) {
         const fileName = file.slice(0, -3);
         const fixtures = require(path.join(__dirname, './fixtures', file));
-        await Models[fileName].bulkCreate(fixtures.default);
+        for (let item of fixtures.default) {
+          await Models[fileName].create(item);
+        }
       }
     } else {
       console.log('connection error');

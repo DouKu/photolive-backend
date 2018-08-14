@@ -8,6 +8,10 @@ const addTag = async ctx => {
   });
   const body = ctx.request.body;
   await Models.Tags.create(body);
+  ctx.body = {
+    code: 200,
+    msg: '标签创建成功！'
+  };
 };
 
 const deleteTag = async ctx => {

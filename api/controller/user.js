@@ -9,7 +9,7 @@ const accountLogin = async ctx => {
     password: 'string'
   });
   const body = ctx.request.body;
-  let user = await Models.User.findOne({ where: { account: body.account } });
+  let user = await Models.Users.findOne({ where: { account: body.account } });
   const isMatch = await user.comparePassword(body.password);
   if (!isMatch) {
     ctx.throw(423, '用户名或密码错误！');
@@ -30,7 +30,7 @@ const emailLogin = async ctx => {
     password: 'string'
   });
   const body = ctx.request.body;
-  let user = await Models.User.findOne({ where: { email: body.email } });
+  let user = await Models.Users.findOne({ where: { email: body.email } });
   const isMatch = await user.comparePassword(body.password);
   if (!isMatch) {
     ctx.throw(423, '邮箱或密码错误！');
@@ -60,10 +60,8 @@ const register = async ctx => {
     email: { type: 'string', required: false }
   });
   const body = ctx.request.body;
-  if (!checkUserRegisterParams(body)) {
-    ctx.throw(423, '请检查注册信息栏，填写好对应信息');
-  }
-  const userCheck = await Models.User.findOne({
+  checkRegister(body, ctx);
+  const userCheck = await Models.Users.findOne({
     raw: true,
     where: { account: body.account }
   });
@@ -82,7 +80,7 @@ const checkAccountExist = async ctx => {
     account: 'string'
   });
   const body = ctx.request.body;
-  const userCheck = await Models.User.findOne({
+  const userCheck = await Models.Users.findOne({
     raw: true,
     where: { account: body.account }
   });
@@ -99,10 +97,16 @@ const checkAccountExist = async ctx => {
   }
 };
 
-function checkUserRegisterParams (Obj) {
+function checkRegister (obj, ctx) {
+  if (!checkUserRegisterParams(obj)) {
+    ctx.throw(423, '请检查注册信息栏，填写好对应信息');
+  }
+}
+
+function checkUserRegisterParams (obj) {
   const field = ['account', 'email', 'phone'];
   for (let item of field) {
-    if (_.has(Obj, item)) {
+    if (_.has(obj, item)) {
       return true;
     }
   }

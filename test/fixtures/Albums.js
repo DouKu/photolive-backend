@@ -5,7 +5,7 @@ export default [
     css_type: 1,
     name: '婚礼',
     avatar: 'hunli',
-    activity_time: new Date(),
+    activity_time: Date.now(),
     location: `I don't konw`,
     top_ad: 'no top ad',
     bottom_ad: 'no bottom ad',
@@ -21,16 +21,16 @@ export default [
       count_down: false
     },
     water_mark: 'jb',
-    created_at: new Date(),
-    expired_at: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000)
+    created_at: Date.now(),
+    expired_at: Date.now() + 30 * 24 * 60 * 60 * 1000
   },
   {
     user_id: 1,
-    album_type: 3,
+    album_type: 2,
     css_type: 1,
     name: '公司年会',
     avatar: 'gong si nian hui',
-    activity_time: new Date(),
+    activity_time: Date.now(),
     location: `I don't konw`,
     top_ad: 'no top ad',
     bottom_ad: 'no bottom ad',
@@ -46,16 +46,16 @@ export default [
       count_down: false
     },
     water_mark: 'jb',
-    created_at: new Date('2017-04-02'),
-    expired_at: new Date('2017-05-02')
+    created_at: Date.now() - 400 * 24 * 60 * 60 * 1000,
+    expired_at: Date.now() - 370 * 24 * 60 * 60 * 1000
   },
   {
     user_id: 1,
-    album_type: 3,
+    album_type: 1,
     css_type: 1,
     name: '同学会',
     avatar: '同学会',
-    activity_time: new Date(),
+    activity_time: Date.now(),
     location: `I don't konw`,
     top_ad: 'no top ad',
     bottom_ad: 'no bottom ad',
@@ -71,7 +71,7 @@ export default [
       count_down: false
     },
     water_mark: 'jb',
-    created_at: new Date('2018-05-03'),
-    expired_at: new Date('2022-05-03')
+    created_at: Date.now() - 50 * 24 * 60 * 60 * 1000,
+    expired_at: Date.now() + 1050 * 24 * 60 * 60 * 1000
   }
 ];

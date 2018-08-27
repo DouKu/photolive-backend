@@ -1,5 +1,5 @@
 'use strict';
-import { STRING, INTEGER, DATE, NOW, JSONB, ARRAY } from 'sequelize';
+import { STRING, INTEGER, JSONB, ARRAY, BIGINT } from 'sequelize';
 import nconf from 'nconf';
 
 export default (sequelize, DataTypes) => {
@@ -36,9 +36,9 @@ export default (sequelize, DataTypes) => {
         defaultValue: ''
       }, // 活动封面图
       activity_time: {
-        type: DATE,
+        type: BIGINT,
         allowNull: false,
-        defaultValue: NOW
+        defaultValue: Date.now()
       }, // 活动时间(用户配置)
       location: {
         type: STRING(200),
@@ -97,13 +97,14 @@ export default (sequelize, DataTypes) => {
         defaultValue: ''
       }, // 水印url
       created_at: {
-        type: DATE,
+        type: BIGINT,
         allowNull: false,
-        defaultValue: NOW
+        defaultValue: Date.now()
       }, // 建立时间
       expired_at: {
-        type: DATE,
-        allowNull: false
+        type: BIGINT,
+        allowNull: false,
+        defaultValue: 0
       } // 过期时间
     }, {}
   );

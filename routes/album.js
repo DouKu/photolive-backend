@@ -1,7 +1,8 @@
 'use strict';
 import {
   addAlbum,
-  listMyAlbum,
+  listMyAlbumBrief,
+  getAlbumDetail,
   albumBaseCfg,
   albumShareCfg,
   albumBannerCfg
@@ -11,7 +12,9 @@ module.exports = (router, authRouter, commonRouter, managerRouter) => {
   // 新建相册
   authRouter.post('/album', addAlbum);
   // 用户创建的活动列表
-  authRouter.get('/album', listMyAlbum);
+  authRouter.get('/album/brief', listMyAlbumBrief);
+  // 相册详细信息
+  authRouter.get('/album/:albumId', getAlbumDetail);
   // 相册基本信息配置
   authRouter.put('/album/cfg/base/:albumId', albumBaseCfg);
   // 相册分享配置

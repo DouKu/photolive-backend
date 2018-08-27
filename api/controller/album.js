@@ -3,6 +3,7 @@
 import moment from 'moment';
 import nconf from 'nconf';
 import { Models } from '../../config/sequelize';
+import { filterLevelField } from '../service/album';
 
 // 添加相册
 const addAlbum = async ctx => {
@@ -19,14 +20,46 @@ const addAlbum = async ctx => {
   };
 };
 
-const listMyAlbum = async ctx => {
+const listMyAlbumBrief = async ctx => {
   let data = await Models.Albums.findAll({
+    raw: true,
+    attributes: ['id', 'name', 'avatar', 'created_at'],
     where: { user_id: ctx.state.userMess.id },
     order: [['created_at', 'DESC']]
   });
   ctx.body = {
     code: 200,
+    data,
+    count: data.length
+  };
+};
+
+const getAlbumDetail = async ctx => {
+  const albumId = ctx.params.albumId;
+  let data = await Models.Albums.findOne({
+    raw: true,
+    where: { id: albumId }
+  });
+  data = filterLevelField(data, nconf.get(`albumType:${data.album_type}`));
+  ctx.body = {
+    code: 200,
     data
+  };
+};
+
+const deleteAlbum = async ctx => {
+  const albumId = ctx.params.albumId;
+  await Models.Albums.destroy({
+    where: { id: albumId }
+  });
+  await Models.Tags.destroy({
+    where: { album_id: albumId }
+  });
+  await Models.Images.destroy({
+    where: { album_id: albumId }
+  });
+  ctx.body = {
+    code: 200
   };
 };
 
@@ -93,6 +126,16 @@ const albumBannerCfg = async ctx => {
   };
 };
 
+export {
+  addAlbum,
+  listMyAlbumBrief,
+  albumBaseCfg,
+  albumShareCfg,
+  albumBannerCfg,
+  deleteAlbum,
+  getAlbumDetail
+};
+
 function checkBaseCfg (albumObj, ctx) {
   checkAlbumOwner(albumObj, ctx);
 }
@@ -132,11 +175,3 @@ function checkBannerLen (banners, albumType, ctx) {
 function getAlbumAccess (albumType, field) {
   return nconf.get(`albumAccess:${albumType}:${field}`);
 }
-
-export {
-  addAlbum,
-  listMyAlbum,
-  albumBaseCfg,
-  albumShareCfg,
-  albumBannerCfg
-};

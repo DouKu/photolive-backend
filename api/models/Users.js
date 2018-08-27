@@ -2,7 +2,7 @@
 import crypto from 'crypto';
 import bcrypt from 'bcrypt';
 import nconf from 'nconf';
-import { STRING, INTEGER, DATE, NOW } from 'sequelize';
+import { STRING, INTEGER, BIGINT } from 'sequelize';
 
 export default (sequelize, DataTypes) => {
   const Users = sequelize.define(
@@ -60,9 +60,9 @@ export default (sequelize, DataTypes) => {
         defaultValue: '这个人很懒，什么都没有记录。。。'
       }, // 个性签名
       register_at: {
-        type: DATE,
+        type: BIGINT,
         allowNull: false,
-        defaultValue: NOW
+        defaultValue: Date.now()
       } // 注册时间
     }, {
       hooks: {

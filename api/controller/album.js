@@ -34,13 +34,21 @@ const listMyAlbumBrief = async ctx => {
   };
 };
 
+/** 不含照片 */
 const getAlbumDetail = async ctx => {
   const albumId = ctx.params.albumId;
   let data = await Models.Albums.findOne({
     raw: true,
     where: { id: albumId }
   });
-  data = filterLevelField(data, nconf.get(`albumType:${data.album_type}`));
+  let tags = await Models.Tags.findAll({
+    raw: true,
+    attributes: ['id', 'title'],
+    where: { album_id: albumId },
+    order: [['id', 'asc']]
+  });
+  data = filterLevelField(data, data.album_type);
+  data.tags = tags;
   ctx.body = {
     code: 200,
     data
@@ -70,7 +78,8 @@ const albumBaseCfg = async ctx => {
   ctx.verifyParams({
     name: 'string',
     activity_time: 'int',
-    location: 'string'
+    location: 'string',
+    css_type: 'int'
   });
   const albumId = ctx.params.albumId;
   const body = ctx.request.body;
@@ -110,11 +119,15 @@ const albumShareCfg = async ctx => {
 
 const albumBannerCfg = async ctx => {
   ctx.verifyParams({
-    banners: 'string'
+    banners: {
+      type: 'array',
+      itemType: 'string'
+    }
   });
   const albumId = ctx.params.albumId;
   const body = ctx.request.body;
   const albumObj = await Models.Albums.findOne({
+    raw: true,
     where: { id: albumId }
   });
   checkBannerCfg(albumObj, body.banners, ctx);

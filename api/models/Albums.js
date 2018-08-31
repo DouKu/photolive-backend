@@ -3,6 +3,7 @@ import { STRING, INTEGER, JSONB, ARRAY, BIGINT } from 'sequelize';
 import nconf from 'nconf';
 
 export default (sequelize, DataTypes) => {
+  const normalType = 1;
   const Albums = sequelize.define(
     'Albums',
     {
@@ -18,7 +19,7 @@ export default (sequelize, DataTypes) => {
       album_type: {
         type: INTEGER,
         allowNull: false,
-        defaultValue: nconf.get('albumAccess:normal').type
+        defaultValue: nconf.get(`albumAccess:${normalType}`).type
       }, // 相册服务类别()
       css_type: {
         type: INTEGER,
@@ -34,7 +35,7 @@ export default (sequelize, DataTypes) => {
         type: STRING(512),
         allowNull: false,
         defaultValue: ''
-      }, // 活动封面图
+      }, // 相册封面图
       activity_time: {
         type: BIGINT,
         allowNull: false,

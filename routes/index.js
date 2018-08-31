@@ -37,6 +37,7 @@ managerRouter.use(checkToken());
 require('./user')(router, authRouter, commonRouter, managerRouter);
 require('./album')(router, authRouter, commonRouter, managerRouter);
 require('./qiniu')(router, authRouter, commonRouter, managerRouter);
+require('./tag')(router, authRouter, commonRouter, managerRouter);
 
 /** 整合路由 */
 router.use(commonRouter.routes(), commonRouter.allowedMethods());

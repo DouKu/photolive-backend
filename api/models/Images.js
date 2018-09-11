@@ -1,5 +1,5 @@
 'use strict';
-import { STRING, INTEGER } from 'sequelize';
+import { STRING, INTEGER, BIGINT } from 'sequelize';
 
 export default (sequelize, DataTypes) => {
   const Images = sequelize.define(
@@ -18,7 +18,7 @@ export default (sequelize, DataTypes) => {
         type: INTEGER,
         allowNull: false
       }, // 标签关联
-      thumbnail_url: {
+      tiny_url: {
         type: STRING(512),
         allowNull: false,
         defaultValue: ''
@@ -37,7 +37,12 @@ export default (sequelize, DataTypes) => {
         type: INTEGER,
         allowNull: false,
         defaultValue: 0
-      } // 图片大小
+      }, // 图片大小
+      upload_at: {
+        type: BIGINT,
+        allowNull: false,
+        defaultValue: Date.now()
+      } // 上传时间
     }, {}
   );
 

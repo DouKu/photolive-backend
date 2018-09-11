@@ -1,5 +1,5 @@
 'use strict';
-import { STRING, INTEGER, JSONB, ARRAY, BIGINT } from 'sequelize';
+import { STRING, INTEGER, JSONB, ARRAY, BIGINT, SMALLINT } from 'sequelize';
 import nconf from 'nconf';
 
 export default (sequelize, DataTypes) => {
@@ -21,11 +21,11 @@ export default (sequelize, DataTypes) => {
         allowNull: false,
         defaultValue: nconf.get(`albumAccess:${normalType}`).type
       }, // 相册服务类别()
-      css_type: {
+      theme_id: {
         type: INTEGER,
         allowNull: false,
         defaultValue: 1
-      }, // 相册样式类别
+      }, // 相册主题id
       name: {
         type: STRING(50),
         allowNull: false,
@@ -46,6 +46,26 @@ export default (sequelize, DataTypes) => {
         allowNull: false,
         defaultValue: ''
       }, // 活动地点
+      start_page: {
+        type: STRING(512),
+        allowNull: false,
+        defaultValue: nconf.get('defaultStartPage')
+      }, // 启动页
+      tiny_start_page: {
+        type: STRING(512),
+        allowNull: false,
+        defaultValue: nconf.get('defaultTinyStartPage')
+      },
+      loading_gif: {
+        type: STRING(512),
+        allowNull: false,
+        defaultValue: nconf.get('defaultLoadingGif')
+      },
+      count_down: {
+        type: SMALLINT,
+        allowNull: false,
+        defaultValue: 0
+      }, // 倒数
       top_ad: {
         type: STRING(80),
         allowNull: false,
@@ -81,15 +101,14 @@ export default (sequelize, DataTypes) => {
         allowNull: false,
         defaultValue: ''
       }, // 分享描述
-      interactive_setting: {
+      interactive: {
         type: JSONB,
         allowNull: false,
         defaultValue: {
           comment: false,
           like: false,
-          photo_message: true,
-          hot_photo: false,
-          count_down: false
+          photo_message: false,
+          hot_photo: false
         }
       }, // 互动功能设置
       water_mark: {
@@ -97,6 +116,16 @@ export default (sequelize, DataTypes) => {
         allowNull: false,
         defaultValue: ''
       }, // 水印url
+      store: {
+        type: BIGINT,
+        allowNull: false,
+        defaultValue: nconf.get('defaultStore')
+      }, // 存储容量
+      store_use: {
+        type: BIGINT,
+        allowNull: false,
+        defaultValue: 0
+      }, // 已用容量
       created_at: {
         type: BIGINT,
         allowNull: false,

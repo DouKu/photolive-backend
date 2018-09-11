@@ -2,6 +2,7 @@
 import _ from 'lodash';
 import { Models } from '../../config/sequelize';
 import { signToken } from '../service/base';
+import { dbFindOne } from '../service/dbtools';
 
 const accountLogin = async ctx => {
   ctx.verifyParams({
@@ -16,9 +17,10 @@ const accountLogin = async ctx => {
   }
   user = user.dataValues;
   const token = signToken(user);
-  user = _.omit(user, ['password', 'app_secret']);
+  user = filterloginFeild(user);
   ctx.body = {
     code: 200,
+    msg: '登录成功!',
     token,
     user
   };
@@ -37,8 +39,10 @@ const emailLogin = async ctx => {
   }
   user = user.dataValues;
   const token = signToken(user);
+  user = filterloginFeild(user);
   ctx.body = {
     code: 200,
+    msg: '登录成功!',
     token,
     user
   };
@@ -50,39 +54,11 @@ const phoneLogin = async ctx => {
   };
 };
 
-const register = async ctx => {
-  ctx.verifyParams({
-    account: { type: 'string', required: false },
-    password: 'string',
-    real_name: { type: 'string', required: false },
-    phone: { type: 'string', required: false },
-    nickname: { type: 'string', required: false },
-    email: { type: 'string', required: false }
-  });
-  const body = ctx.request.body;
-  checkRegister(body, ctx);
-  const userCheck = await Models.Users.findOne({
-    raw: true,
-    where: { account: body.account }
-  });
-  if (userCheck) {
-    ctx.throw(400, '该用户已存在！');
-  }
-  await Models.User.create(body);
-  ctx.body = {
-    code: 200,
-    msg: '注册成功!'
-  };
-};
-
-const checkAccountExist = async ctx => {
-  ctx.verifyParams({
-    account: 'string'
-  });
-  const body = ctx.request.body;
-  const userCheck = await Models.Users.findOne({
-    raw: true,
-    where: { account: body.account }
+const checkUserExist = async ctx => {
+  const query = ctx.request.query;
+  const filter = checkCheckUserExist(query, ctx);
+  const userCheck = await dbFindOne('Users', {
+    where: filter
   });
   if (userCheck) {
     ctx.body = {
@@ -97,20 +73,63 @@ const checkAccountExist = async ctx => {
   }
 };
 
-function checkRegister (obj, ctx) {
-  if (!checkUserRegisterParams(obj)) {
-    ctx.throw(423, '请检查注册信息栏，填写好对应信息');
-  }
-}
-
-function checkUserRegisterParams (obj) {
+function checkCheckUserExist (obj, ctx) {
   const field = ['account', 'email', 'phone'];
+  const filter = {};
   for (let item of field) {
     if (_.has(obj, item)) {
-      return true;
+      filter[item] = obj[item];
+      return filter;
     }
   }
-  return false;
+  ctx.throw(423, '账户名/邮箱/电话缺失');
+}
+
+const register = async ctx => {
+  ctx.verifyParams({
+    account: { type: 'string', min: 6, max: 50, required: false },
+    password: 'string',
+    real_name: { type: 'string', min: 1, max: 50, required: false },
+    phone: { type: 'string', max: 20, required: false },
+    nickname: { type: 'string', min: 1, max: 50, required: false },
+    email: { type: 'email', required: false }
+  });
+  const body = ctx.request.body;
+  checkRegister(body, ctx);
+  const userCheck = await Models.Users.findOne({
+    raw: true,
+    where: {
+      $or: [{
+        account: body.account
+      }, {
+        email: body.email
+      }, {
+        phone: body.phone
+      }]
+    }
+  });
+  if (userCheck) {
+    ctx.throw(400, '该用户已存在！');
+  }
+  await Models.Users.create(body);
+  ctx.body = {
+    code: 200,
+    msg: '注册成功!'
+  };
+};
+
+function checkRegister (obj, ctx) {
+  const field = ['account', 'email', 'phone'];
+  let check = false;
+  for (let item of field) {
+    if (_.has(obj, item)) {
+      check = true;
+      break;
+    }
+  }
+  if (!check) {
+    ctx.throw(423, '请检查注册信息栏，填写好对应信息');
+  }
 }
 
 export {
@@ -118,5 +137,9 @@ export {
   emailLogin,
   phoneLogin,
   register,
-  checkAccountExist
+  checkUserExist
 };
+
+function filterloginFeild (user) {
+  return _.omit(user, ['password', 'app_secret']);
+}

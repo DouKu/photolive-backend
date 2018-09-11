@@ -13,6 +13,18 @@ const filterLevelField = (albumData, albumType) => {
     .value();
 };
 
+const filterWechatField = (albumData, albumType) => {
+  if (!_.isArray(albumData)) {
+    return _.omit(albumData, nconf.get(`albumAccess:${albumType}`).wechatRemove);
+  }
+  return _.chain(albumData)
+    .map(obj => {
+      return _.omit(obj, nconf.get(`albumAccess:${albumType}`).wechatRemove);
+    })
+    .value();
+};
+
 export {
-  filterLevelField
+  filterLevelField,
+  filterWechatField
 };

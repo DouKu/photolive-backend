@@ -42,6 +42,7 @@ const upload = async ctx => {
   // 上存到七牛之后 删除原来的缓存图片
   removeTemImage(imgPath);
   ctx.body = {
+    code: 200,
     imgUrl: `${nconf.get('qiniu').Domain}${qiniu.key}`,
     fsize: qiniu.fsize
   };
@@ -62,6 +63,7 @@ const uploadBase64 = async ctx => {
   // 上存到七牛之后 删除原来的缓存图片
   removeTemImage(imgPath);
   ctx.body = {
+    code: 200,
     imgUrl: `${nconf.get('qiniu').Domain}${qiniu.key}`,
     fsize: qiniu.fsize
   };

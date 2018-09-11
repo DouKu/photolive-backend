@@ -2,7 +2,7 @@ export default [
   {
     user_id: 1,
     album_type: 3,
-    css_type: 1,
+    theme_id: 1,
     name: '婚礼',
     avatar: 'hunli',
     activity_time: Date.now(),
@@ -13,12 +13,11 @@ export default [
     share_avatar: 'no share',
     share_title: 'no share title',
     share_des: 'no share des',
-    interactive_setting: {
+    interactive: {
       comment: false,
       like: false,
       photo_message: true,
-      hot_photo: false,
-      count_down: false
+      hot_photo: false
     },
     water_mark: 'jb',
     created_at: Date.now(),
@@ -27,7 +26,7 @@ export default [
   {
     user_id: 1,
     album_type: 2,
-    css_type: 1,
+    theme_id: 1,
     name: '公司年会',
     avatar: 'gong si nian hui',
     activity_time: Date.now(),
@@ -38,12 +37,11 @@ export default [
     share_avatar: 'no share',
     share_title: 'no share title',
     share_des: 'no share des',
-    interactive_setting: {
+    interactive: {
       comment: false,
       like: false,
       photo_message: true,
-      hot_photo: false,
-      count_down: false
+      hot_photo: false
     },
     water_mark: 'jb',
     created_at: Date.now() - 400 * 24 * 60 * 60 * 1000,
@@ -52,7 +50,7 @@ export default [
   {
     user_id: 1,
     album_type: 1,
-    css_type: 1,
+    theme_id: 1,
     name: '同学会',
     avatar: '同学会',
     activity_time: Date.now(),
@@ -63,12 +61,11 @@ export default [
     share_avatar: 'no share',
     share_title: 'no share title',
     share_des: 'no share des',
-    interactive_setting: {
+    interactive: {
       comment: false,
       like: false,
       photo_message: true,
-      hot_photo: false,
-      count_down: false
+      hot_photo: false
     },
     water_mark: 'jb',
     created_at: Date.now() - 50 * 24 * 60 * 60 * 1000,

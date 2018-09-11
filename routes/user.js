@@ -3,7 +3,8 @@ import {
   accountLogin,
   emailLogin,
   phoneLogin,
-  register
+  register,
+  checkUserExist
 } from '../api/controller/user';
 
 module.exports = (router, authRouter, commonRouter, managerRouter) => {
@@ -15,4 +16,6 @@ module.exports = (router, authRouter, commonRouter, managerRouter) => {
   commonRouter.post('/login/phone', phoneLogin);
   // 注册
   commonRouter.post('/register', register);
+  // 检查账号是否存在
+  commonRouter.get('/user/check', checkUserExist);
 };

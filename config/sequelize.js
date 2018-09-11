@@ -3,6 +3,8 @@ import fs from 'fs';
 import path from 'path';
 import nconf from 'nconf';
 import Sequelize from 'sequelize';
+require('pg').defaults.parseInt8 = true;
+
 const Op = Sequelize.Op;
 const operatorsAliases = {
   $eq: Op.eq,

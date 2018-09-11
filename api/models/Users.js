@@ -35,7 +35,7 @@ export default (sequelize, DataTypes) => {
         defaultValue: ''
       }, // 昵称
       real_name: {
-        type: STRING(20),
+        type: STRING(50),
         allowNull: false,
         defaultValue: ''
       }, // 真实姓名

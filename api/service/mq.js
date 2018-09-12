@@ -1,9 +1,10 @@
-import { mqChannel } from '../../config/mq';
+import { sendMessage } from '../../config/mq';
 
-async function mqSend (data, queue) {
-  await mqChannel.sendToQueue(queue, Buffer.from(JSON.stringify(data)));
+function albumLive (albumId, data) {
+  const key = 'album.live.' + String(albumId);
+  sendMessage(key, JSON.stringify(data));
 };
 
 export {
-  mqSend
+  albumLive
 };

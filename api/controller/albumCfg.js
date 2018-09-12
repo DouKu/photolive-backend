@@ -8,6 +8,7 @@ import {
   dbUpdate, dbDestroy, dbCount, dbUpdateOne
 } from '../service/dbtools';
 import { filterLevelField } from '../service/album';
+import { albumLive } from '../service/mq';
 
 // 添加相册
 const addAlbum = async ctx => {
@@ -300,6 +301,14 @@ function checkShareCfg (albumObj, ctx) {
   checkAlbumOwner(albumObj, ctx);
 }
 
+const testmq = async ctx => {
+  const albumId = ctx.params.albumId;
+  albumLive(albumId, { a: 'lalala' });
+  ctx.body = {
+    code: 200
+  };
+};
+
 export {
   addAlbum,
   listMyAlbumBrief,
@@ -312,7 +321,8 @@ export {
   startPageCfg,
   bannerCfg,
   interactiveCfg,
-  shareCfg
+  shareCfg,
+  testmq
 };
 
 function checkAlbumOwner (albumObj, ctx) {

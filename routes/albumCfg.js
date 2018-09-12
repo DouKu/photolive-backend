@@ -10,7 +10,8 @@ import {
   startPageCfg,
   bannerCfg,
   interactiveCfg,
-  shareCfg
+  shareCfg,
+  testmq
 } from '../api/controller/albumCfg';
 
 /** 配置后台相册相关接口 */
@@ -37,4 +38,6 @@ module.exports = (router, authRouter, commonRouter, managerRouter) => {
   authRouter.put('/album/cfg/interactive/:albumId', interactiveCfg);
   // 相册分享配置
   authRouter.put('/album/cfg/share/:albumId', shareCfg);
+
+  commonRouter.get('/album/testmq/:albumId', testmq);
 };

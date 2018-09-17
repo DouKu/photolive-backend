@@ -43,7 +43,14 @@ export default (sequelize, DataTypes) => {
         allowNull: false,
         defaultValue: Date.now()
       } // 上传时间
-    }, {}
+    }, {
+      indexes: [
+        {
+          method: 'BTREE',
+          fields: ['album_id', 'tag_id']
+        }
+      ]
+    }
   );
 
   Images.associate = Models => {

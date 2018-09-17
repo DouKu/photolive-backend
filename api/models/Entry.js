@@ -2,8 +2,8 @@
 import { STRING, INTEGER } from 'sequelize';
 
 export default (sequelize, DataTypes) => {
-  const Tags = sequelize.define(
-    'Tags',
+  const Entry = sequelize.define(
+    'Entry',
     {
       id: {
         type: INTEGER,
@@ -13,12 +13,22 @@ export default (sequelize, DataTypes) => {
       album_id: {
         type: INTEGER,
         allowNull: false
-      },
+      }, // 相册id外键
       title: {
-        type: STRING(20),
+        type: STRING(50),
         allowNull: false,
         defaultValue: ''
-      } // 标签名
+      }, // 标题
+      des: {
+        type: STRING(200),
+        allowNull: false,
+        defaultValue: ''
+      }, // 描述
+      link: {
+        type: STRING(512),
+        allowNull: false,
+        defaultValue: ''
+      } // 详情链接/跳转图片
     }, {
       indexes: [
         {
@@ -29,10 +39,5 @@ export default (sequelize, DataTypes) => {
     }
   );
 
-  Tags.associate = Models => {
-    Models.Tags.hasMany(Models.Images, { foreignKey: 'tag_id' });
-    Models.Tags.belongsTo(Models.Albums, { foreignKey: 'album_id' });
-  };
-
-  return Tags;
+  return Entry;
 };

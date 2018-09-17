@@ -4,7 +4,7 @@ import {
   upload, uploadBase64
 } from '../api/controller/qiniu';
 
-module.exports = (router, authRouter, commonRouter, managerRouter) => {
+module.exports = (router, authRouter, commonRouter, managerRouter, wechatRouter) => {
   // 获取上传凭证
   authRouter.get('/uploadToken', getUploadToken);
   // 上传文件

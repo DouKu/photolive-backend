@@ -15,7 +15,7 @@ import {
 } from '../api/controller/albumCfg';
 
 /** 配置后台相册相关接口 */
-module.exports = (router, authRouter, commonRouter, managerRouter) => {
+module.exports = (router, authRouter, commonRouter, managerRouter, wechatRouter) => {
   // 新建相册
   authRouter.post('/album', addAlbum);
   // 我的相册列表

@@ -27,7 +27,7 @@ if (nconf.get('NODE_ENV') !== 'unittest') {
 
 app.use(
   jwt({ secret: nconf.get('jwt_secret') }).unless({
-    path: [/^\/api\/v1/, /^\/api\/upload/]
+    path: [/^\/api\/v1/, /^\/api\/upload/, /^\/api\/wechat/, /^\/$/]
   })
 );
 

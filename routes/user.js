@@ -7,7 +7,7 @@ import {
   checkUserExist
 } from '../api/controller/user';
 
-module.exports = (router, authRouter, commonRouter, managerRouter) => {
+module.exports = (router, authRouter, commonRouter, managerRouter, wechatRouter) => {
   // 账户登录
   commonRouter.post('/login/account', accountLogin);
   // 邮箱登录

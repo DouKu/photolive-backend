@@ -39,6 +39,11 @@ const dbUpdate = async (model, newData, filter) => {
   return val;
 };
 
+const dbUpsert = async (model, Data, Otrions) => {
+  const val = await Models[model].upsert(Data, Otrions);
+  return val;
+};
+
 const dbDestroy = async (model, filter) => {
   const val = await Models[model].destroy(filter);
   return val;
@@ -66,6 +71,7 @@ export {
   dbFindAll,
   dbUpdateOne,
   dbUpdate,
+  dbUpsert,
   dbDestroy,
   dbCount,
   dbBulkCreate

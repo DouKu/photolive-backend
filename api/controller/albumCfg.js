@@ -114,20 +114,26 @@ const addTag = async ctx => {
   const album = await dbFindOne('Albums', {
     where: { id: albumId }
   });
-  checkAddTag(nowTagsNum, album.album_type, ctx);
+  checkAddTag(nowTagsNum, album, ctx);
   const newTag = {
     album_id: albumId,
     title
   };
   const data = await dbCreate('Tags', newTag);
+  const tags = album.tags;
+  tags.push({ id: data.id, title });
+  await dbUpdateOne('Albums', { tags }, {
+    where: { id: albumId }
+  });
   ctx.body = {
     code: 200,
-    data
+    tags
   };
 };
 
 /** 检查参数 */
-function checkAddTag (tagsNum, albumType, ctx) {
+function checkAddTag (tagsNum, album, ctx) {
+  const albumType = album.album_type;
   const maxNum = nconf.get(`albumAccess:${albumType}`).tag;
   if (tagsNum >= maxNum || tagsNum + 1 > maxNum) {
     ctx.throw(400, '标签数量过多，请升级相册版本！');
@@ -140,6 +146,7 @@ const updateTag = async ctx => {
   });
   const title = ctx.request.body.title;
   const tagId = ctx.params.tagId;
+
   const data = await dbUpdateOne('Tags', { title }, {
     where: { id: tagId }
   });

@@ -19,7 +19,7 @@ const managerRouter = new Router();
 const wechatRouter = new Router();
 
 /** 路由前缀 */
-// router.prefix('/api');
+router.prefix('/api');
 commonRouter.prefix('/v1');
 authRouter.prefix('/auth');
 managerRouter.prefix('/mana');

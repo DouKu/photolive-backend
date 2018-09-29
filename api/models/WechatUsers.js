@@ -18,7 +18,7 @@ export default (sequelize, DataTypes) => {
       sex: {
         type: SMALLINT,
         allowNull: false,
-        defaultValue: ''
+        defaultValue: 0
       },
       city: {
         type: STRING,

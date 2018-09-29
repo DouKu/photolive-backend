@@ -46,6 +46,11 @@ export default (sequelize, DataTypes) => {
         allowNull: false,
         defaultValue: ''
       }, // 活动地点
+      tags: {
+        type: ARRAY(JSONB),
+        allowNull: false,
+        defaultValue: []
+      }, // 标签
       start_page: {
         type: STRING(512),
         allowNull: false,

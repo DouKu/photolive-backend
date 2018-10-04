@@ -7,6 +7,7 @@ import {
   addTag,
   updateTag,
   deleteTag,
+  sortTag,
   startPageCfg,
   bannerCfg,
   interactiveCfg,
@@ -30,6 +31,8 @@ module.exports = (router, authRouter, commonRouter, managerRouter, wechatRouter)
   authRouter.put('/album/cfg/tag/:tagId', updateTag);
   // 删除相册标签
   authRouter.delete('/album/cfg/tag/:tagId', deleteTag);
+  // 标签排序
+  authRouter.put('/album/cfg/tag/sort/:albumId', sortTag);
   // 启动页配置
   authRouter.put('/album/cfg/startpage/:albumId', startPageCfg);
   // 相册banner配置

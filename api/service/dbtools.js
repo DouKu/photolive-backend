@@ -14,6 +14,14 @@ const dbCreate = async (model, data) => {
   return val;
 };
 
+const dbFindById = async (model, id) => {
+  const val = await Models[model].findOne({
+    where: { id },
+    raw: true
+  });
+  return val;
+};
+
 const dbFindOne = async (model, filter) => {
   const fullParam = Object.assign(baseParam, filter);
   const val = await Models[model].findOne(fullParam);
@@ -67,6 +75,7 @@ const dbBulkCreate = async (model, datas) => {
 
 export {
   dbCreate,
+  dbFindById,
   dbFindOne,
   dbFindAll,
   dbUpdateOne,

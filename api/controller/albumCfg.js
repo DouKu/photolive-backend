@@ -1,10 +1,10 @@
 'use strict';
-// import _ from 'lodash';
+import _ from 'lodash';
 import moment from 'moment';
 import nconf from 'nconf';
 import { Models } from '../../config/sequelize';
 import {
-  dbCreate, dbFindAll, dbFindOne,
+  dbCreate, dbFindAll, dbFindOne, dbFindById,
   dbUpdate, dbDestroy, dbCount, dbUpdateOne
 } from '../service/dbtools';
 import { filterLevelField } from '../service/album';
@@ -84,13 +84,14 @@ const baseCfg = async ctx => {
     theme_id: 'int'
   });
   const albumId = ctx.params.albumId;
-  const body = ctx.request.body;
+  let body = ctx.request.body;
   // 检查更新
-  const albumObj = await dbFindOne('Albums', {
+  const albumObj = await dbFindOne('AlbumConfig', {
     where: { id: albumId }
   });
   checkBaseCfg(albumObj, ctx);
-  await dbUpdate('Albums', body, {
+  body = changeConfigJudge(albumObj, body, 'base', true);
+  await dbUpdate('AlbumConfig', body, {
     where: { id: albumId }
   });
   ctx.body = {
@@ -111,7 +112,7 @@ const addTag = async ctx => {
   const nowTagsNum = await dbCount('Tags', {
     where: { album_id: albumId }
   });
-  const album = await dbFindOne('Albums', {
+  const album = await dbFindOne('AlbumConfig', {
     where: { id: albumId }
   });
   checkAddTag(nowTagsNum, album, ctx);
@@ -122,7 +123,7 @@ const addTag = async ctx => {
   const data = await dbCreate('Tags', newTag);
   const tags = album.tags;
   tags.push({ id: data.id, title });
-  await dbUpdateOne('Albums', { tags }, {
+  await dbUpdateOne('AlbumConfig', { tags }, {
     where: { id: albumId }
   });
   ctx.body = {
@@ -131,8 +132,8 @@ const addTag = async ctx => {
   };
 };
 
-/** 检查参数 */
 function checkAddTag (tagsNum, album, ctx) {
+  checkAlbumOwner(album, ctx);
   const albumType = album.album_type;
   const maxNum = nconf.get(`albumAccess:${albumType}`).tag;
   if (tagsNum >= maxNum || tagsNum + 1 > maxNum) {
@@ -147,14 +148,38 @@ const updateTag = async ctx => {
   const title = ctx.request.body.title;
   const tagId = ctx.params.tagId;
 
-  const data = await dbUpdateOne('Tags', { title }, {
+  const tag = await dbUpdateOne('Tags', { title }, {
     where: { id: tagId }
+  });
+  const albumCfg = await dbFindOne('AlbumConfig', {
+    where: { id: tag.album_id }
+  });
+  checkUpdateTag(albumCfg, ctx);
+  const albumTags = _.chain(albumCfg.tags)
+    .map(o => {
+      if (o.id === tagId) {
+        return {
+          id: tagId,
+          title
+        };
+      } else return o;
+    })
+    .values();
+  await dbUpdateOne('AlbumConfig', { tags: albumTags }, {
+    where: { id: tag.album_id }
   });
   ctx.body = {
     code: 200,
-    data
+    data: {
+      id: tagId,
+      title
+    }
   };
 };
+
+function checkUpdateTag (albumCfg, ctx) {
+  checkAlbumOwner(albumCfg, ctx);
+}
 
 const deleteTag = async ctx => {
   const tagId = ctx.params.tagId;
@@ -164,15 +189,48 @@ const deleteTag = async ctx => {
       where: { id: tagId }
     }]
   });
-  if (imgChcek) {
-    ctx.throw(400, '有图片处于该标签下，请把该标签下的所有图片修改后再删除该标签');
-  }
+  const tag = await dbFindById('Tags', tagId);
+  const albumCfg = await dbFindById('AlbumConfig', tag.album_id);
+  checkDeleteTag(imgChcek, albumCfg, ctx);
   await dbDestroy('Tags', {
     where: { id: tagId }
+  });
+  _.remove(albumCfg.tags, o => { return o.id === tagId; });
+  await dbUpdateOne('AblumConfig', { tags: albumCfg.tags }, {
+    where: { id: tag.album_id }
   });
   ctx.body = {
     code: 200,
     msg: '标签删除成功！'
+  };
+};
+
+function checkDeleteTag (imgChcek, albumCfg, ctx) {
+  checkAlbumOwner(albumCfg, ctx);
+  if (imgChcek) {
+    ctx.throw(400, '有图片处于该标签下，请把该标签下的所有图片修改后再删除该标签');
+  }
+}
+
+const sortTag = async ctx => {
+  ctx.verifyParams({
+    tags: {
+      type: 'array',
+      itemType: 'object',
+      rule: {
+        id: 'int',
+        title: 'string'
+      }
+    }
+  });
+  const albumId = ctx.params.albumId;
+  const tags = ctx.request.body.tags;
+  await dbUpdateOne('AlbumConfig', { tags }, {
+    where: { id: albumId }
+  });
+  ctx.body = {
+    code: 200,
+    msg: 'success'
   };
 };
 
@@ -325,6 +383,7 @@ export {
   addTag,
   updateTag,
   deleteTag,
+  sortTag,
   startPageCfg,
   bannerCfg,
   interactiveCfg,
@@ -340,4 +399,10 @@ function checkAlbumOwner (albumObj, ctx) {
 
 function getAlbumAccess (albumType, field) {
   return nconf.get(`albumAccess:${albumType}:${field}`);
+}
+
+function changeConfigJudge (obj, data, key, bool) {
+  data.config_judge = obj.config_judge;
+  data.config_judge[key] = bool;
+  return data;
 }

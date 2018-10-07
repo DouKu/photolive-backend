@@ -45,8 +45,8 @@ export default (sequelize, DataTypes) => {
   );
 
   EntryCard.associate = Models => {
-    Models.EntryCard.BelongsTo(Models.Albums, { foreignKey: 'album_id' });
-    Models.EntryCard.BelongsTo(Models.AlbumConfig, { foreignKey: 'album_id' });
+    Models.EntryCard.belongsTo(Models.Albums, { foreignKey: 'album_id' });
+    Models.EntryCard.belongsTo(Models.AlbumConfig, { foreignKey: 'album_id' });
   };
 
   return EntryCard;

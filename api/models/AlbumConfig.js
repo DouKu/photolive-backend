@@ -3,6 +3,7 @@ import { STRING, INTEGER, JSONB, ARRAY, BIGINT, SMALLINT } from 'sequelize';
 import nconf from 'nconf';
 
 export default (sequelize, DataTypes) => {
+  const normalType = 1;
   const AlbumConfig = sequelize.define(
     'AlbumConfig',
     {
@@ -14,7 +15,12 @@ export default (sequelize, DataTypes) => {
       user_id: {
         type: INTEGER,
         allowNull: false
-      }, // 用户id方便用
+      }, // 用户id
+      album_type: {
+        type: INTEGER,
+        allowNull: false,
+        defaultValue: nconf.get(`albumAccess:${normalType}`).type
+      }, // 相册类别
       theme_id: {
         type: INTEGER,
         allowNull: false,
@@ -59,7 +65,7 @@ export default (sequelize, DataTypes) => {
         type: STRING(512),
         allowNull: false,
         defaultValue: nconf.get('defaultLoadingGif')
-      },
+      }, // 加载gif
       count_down: {
         type: SMALLINT,
         allowNull: false,
@@ -81,7 +87,7 @@ export default (sequelize, DataTypes) => {
         defaultValue: ''
       }, // 广告文案连接
       banners: {
-        type: ARRAY(STRING(512)),
+        type: ARRAY(JSONB),
         allowNull: false,
         defaultValue: []
       }, // banner url

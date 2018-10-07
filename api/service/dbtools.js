@@ -43,7 +43,8 @@ const dbUpdateOne = async (model, newData, filter) => {
 };
 
 const dbUpdate = async (model, newData, filter) => {
-  const val = await Models[model].update(newData, filter);
+  const fullParam = Object.assign(updateParam, filter);
+  const val = await Models[model].update(newData, fullParam);
   return val;
 };
 

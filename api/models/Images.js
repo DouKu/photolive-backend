@@ -1,5 +1,6 @@
 'use strict';
-import { STRING, INTEGER, BIGINT } from 'sequelize';
+import { STRING, INTEGER, BIGINT, SMALLINT } from 'sequelize';
+import nconf from 'nconf';
 
 export default (sequelize, DataTypes) => {
   const Images = sequelize.define(
@@ -16,18 +17,29 @@ export default (sequelize, DataTypes) => {
       }, // 活动关联
       tag_id: {
         type: INTEGER,
-        allowNull: false
-      }, // 标签关联
-      tiny_url: {
-        type: STRING(512),
         allowNull: false,
-        defaultValue: ''
-      }, // 压缩图url
+        defaultValue: 0
+      }, // 标签关联
+      type: {
+        type: SMALLINT,
+        allowNull: false,
+        defaultValue: nconf.get('imgTyp').img
+      }, // 图片类别
       origin_url: {
         type: STRING(512),
         allowNull: false,
         defaultValue: ''
       }, // 原图url
+      tiny_url: {
+        type: STRING(512),
+        allowNull: false,
+        defaultValue: ''
+      }, // 压缩图url
+      min_url: {
+        type: STRING(512),
+        allowNull: false,
+        defaultValue: ''
+      }, // 极压缩图url
       des: {
         type: STRING(30),
         allowNull: false,
@@ -47,7 +59,7 @@ export default (sequelize, DataTypes) => {
       indexes: [
         {
           method: 'BTREE',
-          fields: ['album_id', 'tag_id']
+          fields: ['album_id', 'type']
         }
       ]
     }

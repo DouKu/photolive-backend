@@ -9,7 +9,8 @@ import {
   deleteTag,
   sortTag,
   startPageCfg,
-  bannerCfg,
+  addBanner,
+  sortBanner,
   interactiveCfg,
   shareCfg,
   testmq
@@ -36,7 +37,9 @@ module.exports = (router, authRouter, commonRouter, managerRouter, wechatRouter)
   // 启动页配置
   authRouter.put('/album/cfg/startpage/:albumId', startPageCfg);
   // 相册banner配置
-  authRouter.put('/album/cfg/banner/:albumId', bannerCfg);
+  authRouter.put('/album/cfg/banner/:albumId', addBanner);
+  // banner排序
+
   // 互动配置
   authRouter.put('/album/cfg/interactive/:albumId', interactiveCfg);
   // 相册分享配置

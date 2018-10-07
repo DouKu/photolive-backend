@@ -2,13 +2,13 @@
 import _ from 'lodash';
 import moment from 'moment';
 import nconf from 'nconf';
-import { Models } from '../../config/sequelize';
 import {
   dbCreate, dbFindAll, dbFindOne, dbFindById,
-  dbUpdate, dbDestroy, dbCount, dbUpdateOne
+  dbUpdate, dbDestroy, dbUpdateOne
 } from '../service/dbtools';
 import { filterLevelField } from '../service/album';
 import { albumLive } from '../service/mq';
+import { getFsize } from '../service/qiniu';
 
 // 添加相册
 const addAlbum = async ctx => {
@@ -109,13 +109,10 @@ const addTag = async ctx => {
   });
   const title = ctx.request.body.title;
   const albumId = ctx.params.albumId;
-  const nowTagsNum = await dbCount('Tags', {
-    where: { album_id: albumId }
-  });
   const album = await dbFindOne('AlbumConfig', {
     where: { id: albumId }
   });
-  checkAddTag(nowTagsNum, album, ctx);
+  checkAddTag(album.tags.length, album, ctx);
   const newTag = {
     album_id: albumId,
     title
@@ -128,7 +125,7 @@ const addTag = async ctx => {
   });
   ctx.body = {
     code: 200,
-    tags
+    data
   };
 };
 
@@ -157,14 +154,14 @@ const updateTag = async ctx => {
   checkUpdateTag(albumCfg, ctx);
   const albumTags = _.chain(albumCfg.tags)
     .map(o => {
-      if (o.id === tagId) {
+      if (String(o.id) === tagId) {
         return {
           id: tagId,
           title
         };
       } else return o;
     })
-    .values();
+    .value();
   await dbUpdateOne('AlbumConfig', { tags: albumTags }, {
     where: { id: tag.album_id }
   });
@@ -184,10 +181,7 @@ function checkUpdateTag (albumCfg, ctx) {
 const deleteTag = async ctx => {
   const tagId = ctx.params.tagId;
   const imgChcek = await dbFindOne('Images', {
-    include: [{
-      model: Models.Tags,
-      where: { id: tagId }
-    }]
+    where: { tag_id: tagId }
   });
   const tag = await dbFindById('Tags', tagId);
   const albumCfg = await dbFindById('AlbumConfig', tag.album_id);
@@ -195,8 +189,10 @@ const deleteTag = async ctx => {
   await dbDestroy('Tags', {
     where: { id: tagId }
   });
-  _.remove(albumCfg.tags, o => { return o.id === tagId; });
-  await dbUpdateOne('AblumConfig', { tags: albumCfg.tags }, {
+  _.remove(albumCfg.tags, o => {
+    return String(o.id) === tagId;
+  });
+  await dbUpdateOne('AlbumConfig', { tags: albumCfg.tags }, {
     where: { id: tag.album_id }
   });
   ctx.body = {
@@ -243,11 +239,11 @@ const startPageCfg = async ctx => {
   });
   const albumId = ctx.params.albumId;
   const body = ctx.request.body;
-  const albumObj = await dbFindOne('Albums', {
+  const albumObj = await dbFindOne('AlbumConfig', {
     where: { id: albumId }
   });
   checkStartPageCfg(albumObj, body, ctx);
-  await dbUpdate('Albums', body, {
+  await dbUpdate('AlbumConfig', body, {
     where: { id: albumId }
   });
   ctx.body = {
@@ -258,11 +254,11 @@ const startPageCfg = async ctx => {
 function checkStartPageCfg (albumObj, body, ctx) {
   checkAlbumOwner(albumObj, ctx);
   if (body.start_page !== null && body.start_page !== undefined) {
-    if (body.start_page_tiny === null || body.start_page_tiny === undefined) {
+    if (body.tiny_start_page === null || body.tiny_start_page === undefined) {
       ctx.throw(423, '参数错误');
     }
   }
-  if (body.start_page_tiny !== null && body.start_page_tiny !== undefined) {
+  if (body.tiny_start_page !== null && body.tiny_start_page !== undefined) {
     if (body.start_page === null || body.start_page === undefined) {
       ctx.throw(423, '参数错误');
     }
@@ -275,20 +271,88 @@ function checkStartPageCfg (albumObj, body, ctx) {
   }
 }
 
-const bannerCfg = async ctx => {
+/** 验证文件版 */
+const addBanner = async ctx => {
   ctx.verifyParams({
-    banners: {
-      type: 'array',
-      itemType: 'string'
-    }
+    origin: { type: 'string' },
+    tiny: { type: 'string' }
   });
   const albumId = ctx.params.albumId;
-  const body = ctx.request.body;
-  const albumObj = await dbFindOne('Albums', {
+  const newBanner = ctx.request.body;
+  const albumObj = await dbFindOne('AlbumConfig', {
     where: { id: albumId }
   });
-  checkBannerCfg(albumObj, body.banners, ctx);
-  await dbUpdate('Albums', body, {
+  const banners = albumObj.banners;
+  checkAddBanner(albumObj, banners, ctx);
+  const stat = await getFsize(newBanner.origin);
+  const newImg = await dbCreate('Images', {
+    album_id: albumId,
+    type: nconf.get('imgTyp').banner,
+    origin_url: newBanner.origin,
+    tiny_url: newBanner.tiny_url,
+    size: stat.fsize
+  });
+  banners.push(Object.assign({ id: newImg.id }, newBanner));
+  await dbUpdate('AlbumCfg', {
+    banners
+  }, {
+    where: { id: albumId }
+  });
+  const data = _.omit(newImg, ['tag_id', 'min_url', 'des']);
+  ctx.body = {
+    code: 200,
+    data
+  };
+};
+
+// const addBanner = async ctx => {
+//   ctx.verifyParams({
+//     origin: { type: 'string' },
+//     tiny: { type: 'string' }
+//   });
+//   const albumId = ctx.params.albumId;
+//   const newBanner = ctx.request.body;
+//   const albumObj = await dbFindOne('AlbumConfig', {
+//     where: { id: albumId }
+//   });
+//   const banners = albumObj.banners;
+//   checkAddBanner(albumObj, banners, ctx);
+//   banners.push(Object.assign({ id: banners.length + 1 }, newBanner));
+//   await dbUpdate('AlbumCfg', {
+//     banners
+//   }, {
+//     where: { id: albumId }
+//   });
+//   ctx.body = {
+//     code: 200
+//   };
+// };
+
+function checkAddBanner (albumObj, banners, ctx) {
+  checkAlbumOwner(albumObj, ctx);
+  if (banners.length >= getAlbumAccess(albumObj.album_type, 'banner')) {
+    ctx.throw(400, '请升级相册配置更多的首页banner！');
+  };
+}
+
+const updateBanner = async ctx => {
+  ctx.verifyParams({
+    id: { type: 'int' },
+    origin: { type: 'string' },
+    tiny: { type: 'string' }
+  });
+  const albumId = ctx.params.albumId;
+  const newBanner = ctx.request.body;
+  const albumObj = await dbFindById('AlbumConfig', albumId);
+  const banners = albumObj.banners;
+  checkUpdateBanner(albumObj, ctx);
+  for (let i = 0; i < banners.length; i++) {
+    if (banners[i].id === newBanner.id) {
+      banners[i] = newBanner;
+      break;
+    }
+  }
+  await dbUpdateOne('AlbumConfig', { banners }, {
     where: { id: albumId }
   });
   ctx.body = {
@@ -296,11 +360,45 @@ const bannerCfg = async ctx => {
   };
 };
 
-function checkBannerCfg (albumObj, banners, ctx) {
-  checkAlbumOwner(albumObj, ctx);
-  if (banners.length > getAlbumAccess(albumObj.album_type, 'banner')) {
-    ctx.throw(400, '请升级相册配置更多的首页banner！');
+function checkUpdateBanner (albumCfg, ctx) {
+  checkAlbumOwner(albumCfg, ctx);
+}
+
+const sortBanner = async ctx => {
+  ctx.verifyParams({
+    bannerIds: {
+      type: 'array',
+      itemType: 'int'
+    }
+  });
+  const ids = ctx.request.body.bannerIds;
+  const albumId = ctx.params.albumId;
+  const albumObj = await dbFindById('AlbumConfig', albumId);
+  const OldBanners = albumObj.banners;
+  const banners = checkSortBanner(albumObj, ids, OldBanners, ctx);
+  await dbUpdateOne('AlbumConfig', { banners }, {
+    where: { id: albumId }
+  });
+  ctx.body = {
+    code: 200
   };
+};
+
+function checkSortBanner (albumCfg, ids, OldBanners, ctx) {
+  checkAlbumOwner(albumCfg, ctx);
+  const banners = [];
+  for (let id of ids) {
+    const objs = _.filter(OldBanners, o => { return o.id === id; });
+    if (objs.length !== 1) {
+      ctx.throw(400, '参数错误');
+    }
+    banners.push({
+      id: banners.length,
+      origin: objs[0].origin,
+      tiny: objs[0].tiny
+    });
+  }
+  return banners;
 }
 
 const interactiveCfg = async ctx => {
@@ -385,7 +483,9 @@ export {
   deleteTag,
   sortTag,
   startPageCfg,
-  bannerCfg,
+  addBanner,
+  updateBanner,
+  sortBanner,
   interactiveCfg,
   shareCfg,
   testmq

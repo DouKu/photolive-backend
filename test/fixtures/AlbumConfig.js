@@ -2,6 +2,7 @@ export default [
   {
     id: 1,
     user_id: 1,
+    album_type: 3,
     name: '婚礼',
     avatar: 'hunli',
     activity_time: Date.now(),
@@ -23,6 +24,7 @@ export default [
   {
     id: 2,
     user_id: 1,
+    album_type: 2,
     name: '公司年会',
     avatar: 'gong si nian hui',
     activity_time: Date.now(),
@@ -44,6 +46,7 @@ export default [
   {
     id: 3,
     user_id: 1,
+    album_type: 1,
     name: '同学会',
     avatar: '同学会',
     activity_time: Date.now(),

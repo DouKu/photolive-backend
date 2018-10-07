@@ -49,7 +49,7 @@ function readdirAsync (path) {
 
 // 把需要先mork的表放前面
 function sort (files) {
-  const frontFiles = ['Users.js', 'Albums.js', 'Tags.js'];
+  const frontFiles = ['Users.js', 'Albums.js', 'AlbumConfig.js', 'Tags.js'];
   for (let item of frontFiles) {
     for (let p = 0; p < files.length; p++) {
       if (files[p] === item) {

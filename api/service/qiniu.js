@@ -138,9 +138,40 @@ function upload64 (ctx, options) {
   });
 };
 
+function fileStat (key) {
+  const bucket = nconf.get('qiniu').Bucket;
+  const accessKey = nconf.get('qiniu').ACCESS_KEY;
+  const secretKey = nconf.get('qiniu').SECRET_KEY;
+  const mac = new qiniu.auth.digest.Mac(accessKey, secretKey);
+  const config = new qiniu.conf.Config();
+  config.zone = qiniu.zone.Zone_z2;
+  const bucketManager = new qiniu.rs.BucketManager(mac, config);
+  return new Promise((resolve, reject) => {
+    bucketManager.stat(bucket, key, function (err, respBody, respInfo) {
+      if (err) {
+        reject(err);
+      } else {
+        if (respInfo.statusCode === 200) {
+          resolve(respBody);
+        } else {
+          reject(respBody.error);
+        }
+      }
+    });
+  });
+}
+
+async function getFsize (url) {
+  const key = url.match(/\b(\w|%)+\b(.jpg|.png|jpeg)$/)[0];
+  const stat = await fileStat(key);
+  return stat;
+}
+
 export {
   uploadFile,
   upToQiniu,
   removeTemImage,
-  upload64
+  upload64,
+  fileStat,
+  getFsize
 };

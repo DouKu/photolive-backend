@@ -9,6 +9,7 @@ import {
 import { filterLevelField } from '../service/album';
 import { albumLive } from '../service/mq';
 import { getFsize } from '../service/qiniu';
+import { checkAndDeleteImg } from '../service/image';
 
 // 添加相册
 const addAlbum = async ctx => {
@@ -152,17 +153,13 @@ const updateTag = async ctx => {
     where: { id: tag.album_id }
   });
   checkUpdateTag(albumCfg, ctx);
-  const albumTags = _.chain(albumCfg.tags)
-    .map(o => {
-      if (String(o.id) === tagId) {
-        return {
-          id: tagId,
-          title
-        };
-      } else return o;
-    })
-    .value();
-  await dbUpdateOne('AlbumConfig', { tags: albumTags }, {
+  for (let i = 0; i < albumCfg.tags.length; i++) {
+    if (albumCfg.tags[i].id === tagId) {
+      albumCfg.tags[i] = { id: tagId, title };
+      break;
+    }
+  }
+  await dbUpdateOne('AlbumConfig', { tags: albumCfg.tags }, {
     where: { id: tag.album_id }
   });
   ctx.body = {
@@ -180,12 +177,12 @@ function checkUpdateTag (albumCfg, ctx) {
 
 const deleteTag = async ctx => {
   const tagId = ctx.params.tagId;
-  const imgChcek = await dbFindOne('Images', {
+  const imgCheck = await dbFindOne('Images', {
     where: { tag_id: tagId }
   });
   const tag = await dbFindById('Tags', tagId);
   const albumCfg = await dbFindById('AlbumConfig', tag.album_id);
-  checkDeleteTag(imgChcek, albumCfg, ctx);
+  checkDeleteTag(imgCheck, albumCfg, ctx);
   await dbDestroy('Tags', {
     where: { id: tagId }
   });
@@ -288,8 +285,8 @@ const addBanner = async ctx => {
   const newImg = await dbCreate('Images', {
     album_id: albumId,
     type: nconf.get('imgTyp').banner,
-    origin_url: newBanner.origin,
-    tiny_url: newBanner.tiny_url,
+    origin: newBanner.origin,
+    tiny: newBanner.tiny,
     size: stat.fsize
   });
   banners.push(Object.assign({ id: newImg.id }, newBanner));
@@ -305,29 +302,6 @@ const addBanner = async ctx => {
   };
 };
 
-// const addBanner = async ctx => {
-//   ctx.verifyParams({
-//     origin: { type: 'string' },
-//     tiny: { type: 'string' }
-//   });
-//   const albumId = ctx.params.albumId;
-//   const newBanner = ctx.request.body;
-//   const albumObj = await dbFindOne('AlbumConfig', {
-//     where: { id: albumId }
-//   });
-//   const banners = albumObj.banners;
-//   checkAddBanner(albumObj, banners, ctx);
-//   banners.push(Object.assign({ id: banners.length + 1 }, newBanner));
-//   await dbUpdate('AlbumCfg', {
-//     banners
-//   }, {
-//     where: { id: albumId }
-//   });
-//   ctx.body = {
-//     code: 200
-//   };
-// };
-
 function checkAddBanner (albumObj, banners, ctx) {
   checkAlbumOwner(albumObj, ctx);
   if (banners.length >= getAlbumAccess(albumObj.album_type, 'banner')) {
@@ -337,24 +311,29 @@ function checkAddBanner (albumObj, banners, ctx) {
 
 const updateBanner = async ctx => {
   ctx.verifyParams({
-    id: { type: 'int' },
     origin: { type: 'string' },
     tiny: { type: 'string' }
   });
-  const albumId = ctx.params.albumId;
+  const bannerId = ctx.params.bannerId;
   const newBanner = ctx.request.body;
-  const albumObj = await dbFindById('AlbumConfig', albumId);
-  const banners = albumObj.banners;
+  const oldBanner = await dbFindById('Images', bannerId);
+  const albumObj = await dbFindById('AlbumConfig', oldBanner.album_id);
+  const bannerList = albumObj.banners;
   checkUpdateBanner(albumObj, ctx);
-  for (let i = 0; i < banners.length; i++) {
-    if (banners[i].id === newBanner.id) {
-      banners[i] = newBanner;
+  for (let i = 0; i < bannerList.length; i++) {
+    if (bannerList[i].id === bannerId) {
+      bannerList[i] = Object.assign({ id: bannerId }, newBanner);
       break;
     }
   }
-  await dbUpdateOne('AlbumConfig', { banners }, {
-    where: { id: albumId }
+  await dbUpdateOne('Images', {
+    origin: newBanner.origin,
+    tiny: newBanner.tiny
+  }, { where: { id: bannerId } });
+  await dbUpdateOne('AlbumConfig', { banners: bannerList }, {
+    where: { id: albumObj.id }
   });
+  await checkAndDeleteImg(oldBanner);
   ctx.body = {
     code: 200
   };
@@ -362,6 +341,30 @@ const updateBanner = async ctx => {
 
 function checkUpdateBanner (albumCfg, ctx) {
   checkAlbumOwner(albumCfg, ctx);
+}
+
+const deleteBanner = async ctx => {
+  const bannerId = ctx.params.bannerId;
+  const banner = await dbFindById('Images', bannerId);
+  const albumCfg = await dbFindById('AlbumConfig', banner.album_id);
+  checkDeleteBanner(albumCfg, ctx);
+  _.remove(albumCfg.banners, o => {
+    return String(o.id) === bannerId;
+  });
+  await dbDestroy('Images', {
+    where: { id: bannerId }
+  });
+  await dbUpdateOne('AlbumConfig', { banners: albumCfg.banners }, {
+    where: { id: banner.album_id }
+  });
+  await checkAndDeleteImg(banner);
+  ctx.body = {
+    code: 200
+  };
+};
+
+function checkDeleteBanner (albumObj, ctx) {
+  checkAlbumOwner(albumObj, ctx);
 }
 
 const sortBanner = async ctx => {
@@ -392,11 +395,7 @@ function checkSortBanner (albumCfg, ids, OldBanners, ctx) {
     if (objs.length !== 1) {
       ctx.throw(400, '参数错误');
     }
-    banners.push({
-      id: banners.length,
-      origin: objs[0].origin,
-      tiny: objs[0].tiny
-    });
+    banners.push(objs);
   }
   return banners;
 }
@@ -485,6 +484,7 @@ export {
   startPageCfg,
   addBanner,
   updateBanner,
+  deleteBanner,
   sortBanner,
   interactiveCfg,
   shareCfg,

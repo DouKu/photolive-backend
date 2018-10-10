@@ -167,11 +167,31 @@ async function getFsize (url) {
   return stat;
 }
 
+function deleteFile (key) {
+  const bucket = nconf.get('qiniu').Bucket;
+  const accessKey = nconf.get('qiniu').ACCESS_KEY;
+  const secretKey = nconf.get('qiniu').SECRET_KEY;
+  const mac = new qiniu.auth.digest.Mac(accessKey, secretKey);
+  const config = new qiniu.conf.Config();
+  config.zone = qiniu.zone.Zone_z2;
+  const bucketManager = new qiniu.rs.BucketManager(mac, config);
+  return new Promise((resolve, reject) => {
+    bucketManager.delete(bucket, key, function (err, respBody, respInfo) {
+      if (err) {
+        reject(err);
+      } else {
+        resolve(respBody);
+      }
+    });
+  });
+}
+
 export {
   uploadFile,
   upToQiniu,
   removeTemImage,
   upload64,
   fileStat,
-  getFsize
+  getFsize,
+  deleteFile
 };

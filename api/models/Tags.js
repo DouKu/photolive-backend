@@ -29,10 +29,10 @@ export default (sequelize, DataTypes) => {
     }
   );
 
-  Tags.associate = Models => {
-    Models.Tags.hasMany(Models.Images, { foreignKey: 'tag_id' });
-    Models.Tags.belongsTo(Models.Albums, { foreignKey: 'album_id' });
-  };
+  // Tags.associate = Models => {
+  //   Models.Tags.hasMany(Models.Images, { foreignKey: 'tag_id' });
+  //   Models.Tags.belongsTo(Models.Albums, { foreignKey: 'album_id' });
+  // };
 
   return Tags;
 };

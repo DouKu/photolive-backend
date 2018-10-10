@@ -39,10 +39,10 @@ export default (sequelize, DataTypes) => {
     }
   );
 
-  Entry.associate = Models => {
-    Models.Entry.belongsTo(Models.Albums, { foreignKey: 'album_id' });
-    Models.Entry.belongsTo(Models.AlbumConfig, { foreignKey: 'album_id' });
-  };
+  // Entry.associate = Models => {
+  //   Models.Entry.belongsTo(Models.Albums, { foreignKey: 'album_id' });
+  //   Models.Entry.belongsTo(Models.AlbumConfig, { foreignKey: 'album_id' });
+  // };
 
   return Entry;
 };

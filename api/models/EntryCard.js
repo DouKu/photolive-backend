@@ -44,10 +44,10 @@ export default (sequelize, DataTypes) => {
     }
   );
 
-  EntryCard.associate = Models => {
-    Models.EntryCard.belongsTo(Models.Albums, { foreignKey: 'album_id' });
-    Models.EntryCard.belongsTo(Models.AlbumConfig, { foreignKey: 'album_id' });
-  };
+  // EntryCard.associate = Models => {
+  //   Models.EntryCard.belongsTo(Models.Albums, { foreignKey: 'album_id' });
+  //   Models.EntryCard.belongsTo(Models.AlbumConfig, { foreignKey: 'album_id' });
+  // };
 
   return EntryCard;
 };

@@ -7,7 +7,7 @@ export default (sequelize, DataTypes) => {
     'Images',
     {
       id: {
-        type: INTEGER,
+        type: BIGINT,
         primaryKey: true,
         autoIncrement: true
       }, // 用户id
@@ -25,17 +25,17 @@ export default (sequelize, DataTypes) => {
         allowNull: false,
         defaultValue: nconf.get('imgTyp').img
       }, // 图片类别
-      origin_url: {
+      origin: {
         type: STRING(512),
         allowNull: false,
         defaultValue: ''
       }, // 原图url
-      tiny_url: {
+      tiny: {
         type: STRING(512),
         allowNull: false,
         defaultValue: ''
       }, // 压缩图url
-      min_url: {
+      min: {
         type: STRING(512),
         allowNull: false,
         defaultValue: ''
@@ -59,15 +59,15 @@ export default (sequelize, DataTypes) => {
       indexes: [
         {
           method: 'BTREE',
-          fields: ['album_id', 'type']
+          fields: ['album_id', 'type', 'origin', 'tiny', 'min']
         }
       ]
     }
   );
 
-  Images.associate = Models => {
-    Models.Images.belongsTo(Models.Albums, { foreignKey: 'album_id' });
-    Models.Images.belongsTo(Models.Tags, { foreignKey: 'tag_id' });
-  };
+  // Images.associate = Models => {
+  //   Models.Images.belongsTo(Models.Albums, { foreignKey: 'album_id' });
+  //   Models.Images.belongsTo(Models.Tags, { foreignKey: 'tag_id' });
+  // };
   return Images;
 };

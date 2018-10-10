@@ -3,6 +3,7 @@ import '../config/nconf';
 import path from 'path';
 import fs from 'fs';
 import nconf from 'nconf';
+import _ from 'lodash';
 import app from '../config/koa';
 import { Models, sequelize } from '../config/sequelize';
 const request = require('supertest').agent(app.callback());
@@ -25,7 +26,13 @@ describe('init db', () => {
       for (let file of models) {
         const fileName = file.slice(0, -3);
         const fixtures = require(path.join(__dirname, './fixtures', file));
+        let cal = 1;
         for (let item of fixtures.default) {
+          if (_.has(item, 'id')) {
+            cal = item.id;
+          } else {
+            item.id = ++cal;
+          }
           await Models[fileName].create(item);
         }
       }

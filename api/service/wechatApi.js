@@ -13,13 +13,13 @@ const wechatAPI = new WeChatAPI(nconf.get('wechat:appId'), nconf.get('wechat:app
   });
 }, function (token, cb) {
   console.log('createToken:' + token);
-  const accessToken = token.access_token;
-  const expiresIn = token.expires_in;
+  const accessToken = token.accessToken;
+  const expiresIn = token.expiresIn;
   dbUpsert('AccessToken', {
     type: 'wechat',
-    access_token: accessToken,
-    expires_in: expiresIn,
-    update_at: Date.now()
+    accessToken: accessToken,
+    expiresIn: expiresIn,
+    updateAt: Date.now()
   }, {}).then(function (result) {
     cb(null, result);
   }).catch(function (err) {

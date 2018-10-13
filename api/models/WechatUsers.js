@@ -45,7 +45,7 @@ export default (sequelize, DataTypes) => {
       //   allowNull: false,
       //   defaultValue: []
       // },
-      access_token: {
+      accessToken: {
         type: STRING,
         allowNull: false,
         defaultValue: ''
@@ -60,7 +60,7 @@ export default (sequelize, DataTypes) => {
         allowNull: false,
         defaultValue: Date.now()
       },
-      update_at: {
+      updateAt: {
         type: BIGINT,
         allowNull: false,
         defaultValue: Date.now()

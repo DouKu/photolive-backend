@@ -9,16 +9,16 @@ export default (sequelize, DataTypes) => {
         type: STRING,
         unique: true
       }, // wechat
-      access_token: {
+      accessToken: {
         type: STRING,
         allowNull: false
       }, // token
-      expires_in: {
+      expiresIn: {
         type: INTEGER,
         allowNull: false,
         defaultValue: 0
       }, // 过期时间
-      update_at: {
+      updateAt: {
         type: BIGINT,
         allowNull: false,
         defaultValue: Date.now()

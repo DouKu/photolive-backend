@@ -89,7 +89,7 @@ const register = async ctx => {
   ctx.verifyParams({
     account: { type: 'string', min: 6, max: 50, required: false },
     password: 'string',
-    real_name: { type: 'string', min: 1, max: 50, required: false },
+    realName: { type: 'string', min: 1, max: 50, required: false },
     phone: { type: 'string', max: 20, required: false },
     nickname: { type: 'string', min: 1, max: 50, required: false },
     email: { type: 'email', required: false }
@@ -141,5 +141,5 @@ export {
 };
 
 function filterloginFeild (user) {
-  return _.omit(user, ['password', 'app_secret']);
+  return _.omit(user, ['password', 'appSecret']);
 }

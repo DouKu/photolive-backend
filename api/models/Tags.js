@@ -10,7 +10,7 @@ export default (sequelize, DataTypes) => {
         primaryKey: true,
         autoIncrement: true
       }, // 用户id
-      album_id: {
+      albumId: {
         type: INTEGER,
         allowNull: false
       },
@@ -23,15 +23,15 @@ export default (sequelize, DataTypes) => {
       indexes: [
         {
           method: 'BTREE',
-          fields: ['album_id']
+          fields: ['albumId']
         }
       ]
     }
   );
 
   // Tags.associate = Models => {
-  //   Models.Tags.hasMany(Models.Images, { foreignKey: 'tag_id' });
-  //   Models.Tags.belongsTo(Models.Albums, { foreignKey: 'album_id' });
+  //   Models.Tags.hasMany(Models.Images, { foreignKey: 'tagId' });
+  //   Models.Tags.belongsTo(Models.Albums, { foreignKey: 'albumId' });
   // };
 
   return Tags;

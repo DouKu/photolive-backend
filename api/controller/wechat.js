@@ -65,7 +65,7 @@ const exchangeToken = async ctx => {
   const code = ctx.request.body.code;
   const body = await getToken(code);
   const refreshToken = body.refresh_token;
-  const accessToken = body.access_token;
+  const accessToken = body.accessToken;
   const openid = body.openid;
   const userInfo = await getUserInfo(accessToken, openid);
   const user = await dbFindOne('WechatUsers', { openid });
@@ -73,7 +73,7 @@ const exchangeToken = async ctx => {
     await dbCreate('WechatUsers', {
       ...userInfo,
       refresh_token: refreshToken,
-      access_token: accessToken
+      accessToken: accessToken
     });
   }
   const token = jwt.sign({
@@ -91,20 +91,20 @@ const exchangeToken = async ctx => {
 };
 
 const server = async ctx => {
-  // let signature = ctx.query.signature;
-  // let timestamp = ctx.query.timestamp;
-  // let nonce = ctx.query.nonce;
+  let signature = ctx.query.signature;
+  let timestamp = ctx.query.timestamp;
+  let nonce = ctx.query.nonce;
   let echostr = ctx.query.echostr;
-  // let array = [nconf.get('wechat:token'), timestamp, nonce];
-  // array.sort();
-  // let tempStr = array.join('');
-  // const hashCode = crypto.createHash('sha1');
-  // let resultCode = hashCode.update(tempStr, 'utf8').digest('hex');
-  // if (resultCode === signature) {
-  ctx.body = echostr;
-  // } else {
-  // ctx.body = 'mismatch';
-  // }
+  let array = [nconf.get('wechat:token'), timestamp, nonce];
+  array.sort();
+  let tempStr = array.join('');
+  const hashCode = crypto.createHash('sha1');
+  let resultCode = hashCode.update(tempStr, 'utf8').digest('hex');
+  if (resultCode === signature) {
+    ctx.body = echostr;
+  } else {
+    ctx.body = 'mismatch';
+  }
 };
 
 export {

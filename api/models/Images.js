@@ -11,11 +11,11 @@ export default (sequelize, DataTypes) => {
         primaryKey: true,
         autoIncrement: true
       }, // 用户id
-      album_id: {
+      albumId: {
         type: INTEGER,
         allowNull: false
       }, // 活动关联
-      tag_id: {
+      tagId: {
         type: INTEGER,
         allowNull: false,
         defaultValue: 0
@@ -50,7 +50,7 @@ export default (sequelize, DataTypes) => {
         allowNull: false,
         defaultValue: 0
       }, // 图片大小
-      upload_at: {
+      uploadAt: {
         type: BIGINT,
         allowNull: false,
         defaultValue: Date.now()
@@ -59,15 +59,15 @@ export default (sequelize, DataTypes) => {
       indexes: [
         {
           method: 'BTREE',
-          fields: ['album_id', 'type', 'origin', 'tiny', 'min']
+          fields: ['albumId', 'type', 'origin', 'tiny', 'min']
         }
       ]
     }
   );
 
   // Images.associate = Models => {
-  //   Models.Images.belongsTo(Models.Albums, { foreignKey: 'album_id' });
-  //   Models.Images.belongsTo(Models.Tags, { foreignKey: 'tag_id' });
+  //   Models.Images.belongsTo(Models.Albums, { foreignKey: 'albumId' });
+  //   Models.Images.belongsTo(Models.Tags, { foreignKey: 'tagId' });
   // };
   return Images;
 };

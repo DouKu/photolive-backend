@@ -18,8 +18,8 @@ const addAlbum = async ctx => {
     avatar: { type: 'string', required: false }
   });
   const body = ctx.request.body;
-  body.user_id = ctx.state.userMess.id;
-  body.expired_at = moment().add(1, 'months').format();
+  body.userId = ctx.state.userMess.id;
+  body.expiredAt = moment().add(1, 'months').format();
   await dbCreate(body);
   ctx.body = {
     code: 200
@@ -28,9 +28,9 @@ const addAlbum = async ctx => {
 
 const listMyAlbumBrief = async ctx => {
   let data = await dbFindAll('Albums', {
-    attributes: ['id', 'name', 'avatar', 'created_at', 'expired_at'],
-    where: { user_id: ctx.state.userMess.id },
-    order: [['created_at', 'DESC']]
+    attributes: ['id', 'name', 'avatar', 'createdAt', 'expiredAt'],
+    where: { userId: ctx.state.userMess.id },
+    order: [['createdAt', 'DESC']]
   });
   ctx.body = {
     code: 200,
@@ -47,10 +47,10 @@ const getAlbumDetail = async ctx => {
   });
   let tags = await dbFindAll('Tags', {
     attributes: ['id', 'title'],
-    where: { album_id: albumId },
+    where: { albumId: albumId },
     order: [['id', 'asc']]
   });
-  data = filterLevelField(data, data.album_type);
+  data = filterLevelField(data, data.albumType);
   data.tags = tags;
   ctx.body = {
     code: 200,
@@ -64,10 +64,10 @@ const deleteAlbum = async ctx => {
     where: { id: albumId }
   });
   await dbDestroy('Tags', {
-    where: { album_id: albumId }
+    where: { albumId: albumId }
   });
   await dbDestroy('Images', {
-    where: { album_id: albumId }
+    where: { albumId: albumId }
   });
   ctx.body = {
     code: 200
@@ -80,9 +80,9 @@ const deleteAlbum = async ctx => {
 const baseCfg = async ctx => {
   ctx.verifyParams({
     name: 'string',
-    activity_time: 'int',
+    activityTime: 'int',
     location: 'string',
-    theme_id: 'int'
+    themeId: 'int'
   });
   const albumId = ctx.params.albumId;
   let body = ctx.request.body;
@@ -115,7 +115,7 @@ const addTag = async ctx => {
   });
   checkAddTag(album.tags.length, album, ctx);
   const newTag = {
-    album_id: albumId,
+    albumId: albumId,
     title
   };
   const data = await dbCreate('Tags', newTag);
@@ -132,7 +132,7 @@ const addTag = async ctx => {
 
 function checkAddTag (tagsNum, album, ctx) {
   checkAlbumOwner(album, ctx);
-  const albumType = album.album_type;
+  const albumType = album.albumType;
   const maxNum = nconf.get(`albumAccess:${albumType}`).tag;
   if (tagsNum >= maxNum || tagsNum + 1 > maxNum) {
     ctx.throw(400, '标签数量过多，请升级相册版本！');
@@ -150,7 +150,7 @@ const updateTag = async ctx => {
     where: { id: tagId }
   });
   const albumCfg = await dbFindOne('AlbumConfig', {
-    where: { id: tag.album_id }
+    where: { id: tag.albumId }
   });
   checkUpdateTag(albumCfg, ctx);
   for (let i = 0; i < albumCfg.tags.length; i++) {
@@ -160,7 +160,7 @@ const updateTag = async ctx => {
     }
   }
   await dbUpdateOne('AlbumConfig', { tags: albumCfg.tags }, {
-    where: { id: tag.album_id }
+    where: { id: tag.albumId }
   });
   ctx.body = {
     code: 200,
@@ -178,10 +178,10 @@ function checkUpdateTag (albumCfg, ctx) {
 const deleteTag = async ctx => {
   const tagId = ctx.params.tagId;
   const imgCheck = await dbFindOne('Images', {
-    where: { tag_id: tagId }
+    where: { tagId: tagId }
   });
   const tag = await dbFindById('Tags', tagId);
-  const albumCfg = await dbFindById('AlbumConfig', tag.album_id);
+  const albumCfg = await dbFindById('AlbumConfig', tag.albumId);
   checkDeleteTag(imgCheck, albumCfg, ctx);
   await dbDestroy('Tags', {
     where: { id: tagId }
@@ -190,7 +190,7 @@ const deleteTag = async ctx => {
     return String(o.id) === tagId;
   });
   await dbUpdateOne('AlbumConfig', { tags: albumCfg.tags }, {
-    where: { id: tag.album_id }
+    where: { id: tag.albumId }
   });
   ctx.body = {
     code: 200,
@@ -229,10 +229,10 @@ const sortTag = async ctx => {
 
 const startPageCfg = async ctx => {
   ctx.verifyParams({
-    start_page: { type: 'string', required: false },
-    tiny_start_page: { type: 'string', required: false },
-    loading_gif: { type: 'string', required: false },
-    count_down: { type: 'int', required: false }
+    startPage: { type: 'string', required: false },
+    tinyStartPage: { type: 'string', required: false },
+    loadingGif: { type: 'string', required: false },
+    countDown: { type: 'int', required: false }
   });
   const albumId = ctx.params.albumId;
   const body = ctx.request.body;
@@ -250,19 +250,19 @@ const startPageCfg = async ctx => {
 
 function checkStartPageCfg (albumObj, body, ctx) {
   checkAlbumOwner(albumObj, ctx);
-  if (body.start_page !== null && body.start_page !== undefined) {
-    if (body.tiny_start_page === null || body.tiny_start_page === undefined) {
+  if (body.startPage !== null && body.startPage !== undefined) {
+    if (body.tinyStartPage === null || body.tinyStartPage === undefined) {
       ctx.throw(423, '参数错误');
     }
   }
-  if (body.tiny_start_page !== null && body.tiny_start_page !== undefined) {
-    if (body.start_page === null || body.start_page === undefined) {
+  if (body.tinyStartPage !== null && body.tinyStartPage !== undefined) {
+    if (body.startPage === null || body.startPage === undefined) {
       ctx.throw(423, '参数错误');
     }
   }
-  const gif = body.loading_gif;
+  const gif = body.loadingGif;
   if (gif !== null && gif !== undefined) {
-    if (!getAlbumAccess(albumObj.album_type, 'gif')) {
+    if (!getAlbumAccess(albumObj.albumType, 'gif')) {
       ctx.throw(400, '该相册不允许配置加载gif，请升级相册');
     }
   }
@@ -283,7 +283,7 @@ const addBanner = async ctx => {
   checkAddBanner(albumObj, banners, ctx);
   const stat = await getFsize(newBanner.origin);
   const newImg = await dbCreate('Images', {
-    album_id: albumId,
+    albumId: albumId,
     type: nconf.get('imgTyp').banner,
     origin: newBanner.origin,
     tiny: newBanner.tiny,
@@ -295,7 +295,7 @@ const addBanner = async ctx => {
   }, {
     where: { id: albumId }
   });
-  const data = _.omit(newImg, ['tag_id', 'min_url', 'des']);
+  const data = _.omit(newImg, ['tagId', 'min_url', 'des']);
   ctx.body = {
     code: 200,
     data
@@ -304,7 +304,7 @@ const addBanner = async ctx => {
 
 function checkAddBanner (albumObj, banners, ctx) {
   checkAlbumOwner(albumObj, ctx);
-  if (banners.length >= getAlbumAccess(albumObj.album_type, 'banner')) {
+  if (banners.length >= getAlbumAccess(albumObj.albumType, 'banner')) {
     ctx.throw(400, '请升级相册配置更多的首页banner！');
   };
 }
@@ -317,7 +317,7 @@ const updateBanner = async ctx => {
   const bannerId = ctx.params.bannerId;
   const newBanner = ctx.request.body;
   const oldBanner = await dbFindById('Images', bannerId);
-  const albumObj = await dbFindById('AlbumConfig', oldBanner.album_id);
+  const albumObj = await dbFindById('AlbumConfig', oldBanner.albumId);
   const bannerList = albumObj.banners;
   checkUpdateBanner(albumObj, ctx);
   for (let i = 0; i < bannerList.length; i++) {
@@ -346,7 +346,7 @@ function checkUpdateBanner (albumCfg, ctx) {
 const deleteBanner = async ctx => {
   const bannerId = ctx.params.bannerId;
   const banner = await dbFindById('Images', bannerId);
-  const albumCfg = await dbFindById('AlbumConfig', banner.album_id);
+  const albumCfg = await dbFindById('AlbumConfig', banner.albumId);
   checkDeleteBanner(albumCfg, ctx);
   _.remove(albumCfg.banners, o => {
     return String(o.id) === bannerId;
@@ -355,7 +355,7 @@ const deleteBanner = async ctx => {
     where: { id: bannerId }
   });
   await dbUpdateOne('AlbumConfig', { banners: albumCfg.banners }, {
-    where: { id: banner.album_id }
+    where: { id: banner.albumId }
   });
   await checkAndDeleteImg(banner);
   ctx.body = {
@@ -407,8 +407,8 @@ const interactiveCfg = async ctx => {
       rule: {
         comment: { type: 'bool', required: false },
         like: { type: 'bool', required: false },
-        photo_message: { type: 'bool', required: false },
-        hot_photo: { type: 'bool', required: false }
+        photoMessage: { type: 'bool', required: false },
+        hotPhoto: { type: 'bool', required: false }
       }
     }
   });
@@ -429,7 +429,7 @@ const interactiveCfg = async ctx => {
 
 function checkInteractiveCfg (album, data, ctx) {
   checkAlbumOwner(album, ctx);
-  const InteractiveCfg = getAlbumAccess(album.album_type, 'interactive');
+  const InteractiveCfg = getAlbumAccess(album.albumType, 'interactive');
   const cfgKeys = Object.keys(data);
   for (let key of cfgKeys) {
     if (InteractiveCfg[key] !== true) {
@@ -441,9 +441,9 @@ function checkInteractiveCfg (album, data, ctx) {
 
 const shareCfg = async ctx => {
   ctx.verifyParams({
-    share_avatar: { type: 'string', required: false },
-    share_title: { type: 'string', required: false },
-    share_des: { type: 'string', required: false }
+    shareAvatar: { type: 'string', required: false },
+    shareTitle: { type: 'string', required: false },
+    shareDes: { type: 'string', required: false }
   });
   const albumId = ctx.params.albumId;
   const body = ctx.request.body;
@@ -492,7 +492,7 @@ export {
 };
 
 function checkAlbumOwner (albumObj, ctx) {
-  if (albumObj.user_id !== ctx.state.userMess.id) {
+  if (albumObj.userId !== ctx.state.userMess.id) {
     ctx.throw(403, '无权修改该相册');
   }
 }
@@ -502,7 +502,7 @@ function getAlbumAccess (albumType, field) {
 }
 
 function changeConfigJudge (obj, data, key, bool) {
-  data.config_judge = obj.config_judge;
-  data.config_judge[key] = bool;
+  data.configJudge = obj.configJudge;
+  data.configJudge[key] = bool;
   return data;
 }

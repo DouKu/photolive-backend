@@ -8,80 +8,60 @@ export default (sequelize, DataTypes) => {
     'AlbumConfig',
     {
       id: {
-        type: INTEGER,
+        type: BIGINT,
         primaryKey: true,
         autoIncrement: true
       },
-      user_id: {
+      userId: {
         type: INTEGER,
         allowNull: false
       }, // 用户id
-      album_type: {
+      albumType: {
         type: INTEGER,
         allowNull: false,
         defaultValue: nconf.get(`albumAccess:${normalType}`).type
       }, // 相册类别
-      theme_id: {
+      themeId: {
         type: INTEGER,
         allowNull: false,
         defaultValue: 1
       }, // 相册主题id
-      name: {
-        type: STRING(50),
-        allowNull: false,
-        defaultValue: ''
-      }, // 活动名(相册名)
-      avatar: {
-        type: STRING(512),
-        allowNull: false,
-        defaultValue: ''
-      }, // 相册封面图
-      activity_time: {
-        type: BIGINT,
-        allowNull: false,
-        defaultValue: Date.now()
-      }, // 活动时间(用户配置)
-      location: {
-        type: STRING(200),
-        allowNull: false,
-        defaultValue: ''
-      }, // 活动地点
       tags: {
         type: ARRAY(JSONB),
         allowNull: false,
         defaultValue: []
       }, // 标签
-      start_page: {
+      startPage: {
         type: STRING(512),
         allowNull: false,
         defaultValue: nconf.get('defaultStartPage')
       }, // 启动页
-      tiny_start_page: {
+      tinyStartPage: {
         type: STRING(512),
         allowNull: false,
         defaultValue: nconf.get('defaultTinyStartPage')
       },
-      loading_gif: {
+      loadingGif: {
         type: STRING(512),
         allowNull: false,
         defaultValue: nconf.get('defaultLoadingGif')
       }, // 加载gif
-      count_down: {
+      countDown: {
         type: SMALLINT,
         allowNull: false,
         defaultValue: 0
       }, // 倒数
-      top_ad: {
+      topAd: {
         type: STRING(80),
         allowNull: false,
         defaultValue: ''
       }, // 顶部广告
-      bottom_ad: {
+      bottomAd: {
         type: STRING(80),
         allowNull: false,
         defaultValue: ''
       }, // 底部广告文案
-      bottom_ad_link: {
+      bottomAdLink: {
         type: STRING(500),
         allowNull: false,
         defaultValue: ''
@@ -91,17 +71,17 @@ export default (sequelize, DataTypes) => {
         allowNull: false,
         defaultValue: []
       }, // banner url
-      share_avatar: {
+      shareAvatar: {
         type: STRING(500),
         allowNull: false,
         defaultValue: ''
       }, // 分享图片
-      share_title: {
+      shareTitle: {
         type: STRING(50),
         allowNull: false,
         defaultValue: ''
       }, // 分享标题
-      share_des: {
+      shareDes: {
         type: STRING(100),
         allowNull: false,
         defaultValue: ''
@@ -112,28 +92,28 @@ export default (sequelize, DataTypes) => {
         defaultValue: {
           comment: false,
           like: false,
-          photo_message: false,
-          hot_photo: false
+          photoMessage: false,
+          hotPhoto: false
         }
       }, // 互动功能设置
-      water_mark: {
+      waterMark: {
         type: STRING(512),
         allowNull: false,
         defaultValue: ''
       }, // 水印url
-      config_judge: {
+      configJudge: {
         type: JSONB,
         allowNull: false,
         defaultValue: {
           base: false,
           tag: true,
-          start_page: false,
+          startPage: false,
           banner: false,
           share: false,
           puzzle: false,
-          entry_card: false,
-          top_ad: false,
-          bottom_ad: false,
+          entryCard: false,
+          topAd: false,
+          bottomAd: false,
           security: false
         }
       }, // 判断配置
@@ -145,14 +125,14 @@ export default (sequelize, DataTypes) => {
     }, {}
   );
 
-  // AlbumConfig.associate = Models => {
-  //   Models.AlbumConfig.belongsTo(Models.Albums, { foreignKey: 'id' });
-  //   Models.AlbumConfig.hasOne(Models.Entry, { foreignKey: 'album_id' });
-  //   Models.AlbumConfig.hasMany(Models.EntryCard, { foreignKey: 'album_id' });
-  //   Models.AlbumConfig.hasMany(Models.Tags, { foreignKey: 'album_id' });
-  //   Models.AlbumConfig.hasMany(Models.Images, { foreignKey: 'album_id' });
-  //   Models.AlbumConfig.belongsTo(Models.Users, { foreignKey: 'user_id' });
-  // };
+  AlbumConfig.associate = Models => {
+    Models.AlbumConfig.belongsTo(Models.Albums, { foreignKey: 'id' });
+    // Models.AlbumConfig.hasOne(Models.Entry, { foreignKey: 'albumId' });
+    // Models.AlbumConfig.hasMany(Models.EntryCard, { foreignKey: 'albumId' });
+    // Models.AlbumConfig.hasMany(Models.Tags, { foreignKey: 'albumId' });
+    // Models.AlbumConfig.hasMany(Models.Images, { foreignKey: 'albumId' });
+    // Models.AlbumConfig.belongsTo(Models.Users, { foreignKey: 'userId' });
+  };
 
   return AlbumConfig;
 };

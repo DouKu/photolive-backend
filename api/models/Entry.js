@@ -10,7 +10,7 @@ export default (sequelize, DataTypes) => {
         primaryKey: true,
         autoIncrement: true
       }, // 用户id
-      album_id: {
+      albumId: {
         type: INTEGER,
         allowNull: false
       }, // 相册id外键
@@ -33,15 +33,15 @@ export default (sequelize, DataTypes) => {
       indexes: [
         {
           method: 'BTREE',
-          fields: ['album_id']
+          fields: ['albumId']
         }
       ]
     }
   );
 
   // Entry.associate = Models => {
-  //   Models.Entry.belongsTo(Models.Albums, { foreignKey: 'album_id' });
-  //   Models.Entry.belongsTo(Models.AlbumConfig, { foreignKey: 'album_id' });
+  //   Models.Entry.belongsTo(Models.Albums, { foreignKey: 'albumId' });
+  //   Models.Entry.belongsTo(Models.AlbumConfig, { foreignKey: 'albumId' });
   // };
 
   return Entry;

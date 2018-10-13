@@ -26,7 +26,7 @@ describe('init db', () => {
       for (let file of models) {
         const fileName = file.slice(0, -3);
         const fixtures = require(path.join(__dirname, './fixtures', file));
-        let cal = 1;
+        let cal = 0;
         for (let item of fixtures.default) {
           if (_.has(item, 'id')) {
             cal = item.id;

@@ -34,7 +34,7 @@ export default (sequelize, DataTypes) => {
         allowNull: false,
         defaultValue: ''
       }, // 昵称
-      real_name: {
+      realName: {
         type: STRING(50),
         allowNull: false,
         defaultValue: ''
@@ -44,7 +44,7 @@ export default (sequelize, DataTypes) => {
         allowNull: false,
         defaultValue: ''
       },
-      app_secret: {
+      appSecret: {
         type: STRING(512),
         allowNull: false,
         defaultValue: ''
@@ -59,7 +59,7 @@ export default (sequelize, DataTypes) => {
         allowNull: false,
         defaultValue: '这个人很懒，什么都没有记录。。。'
       }, // 个性签名
-      register_at: {
+      registerAt: {
         type: BIGINT,
         allowNull: false,
         defaultValue: Date.now()
@@ -67,13 +67,13 @@ export default (sequelize, DataTypes) => {
     }, {
       hooks: {
         beforeCreate: (user, option) => {
-          // 哈希密码，生成app_secret
+          // 哈希密码，生成appSecret
           return bcrypt.genSalt(nconf.get('saltRound'))
             .then(salt => {
               return bcrypt.hash(user.password, salt)
                 .then(hash => {
                   user.password = hash;
-                  user.app_secret = GetHmac();
+                  user.appSecret = GetHmac();
                 });
             })
             .catch(error => {
@@ -97,12 +97,12 @@ export default (sequelize, DataTypes) => {
   }
 
   // Users.associate = Models => {
-  //   Models.Users.hasMany(Models.Albums, { foreignKey: 'user_id' });
+  //   Models.Users.hasMany(Models.Albums, { foreignKey: 'userId' });
   // };
 
   Users.checkToken = async function (token) {
     const user = await this.findById(token.id);
-    if (token.secret === user.app_secret) {
+    if (token.secret === user.appSecret) {
       return user;
     } else {
       throw Error('验证未通过!');

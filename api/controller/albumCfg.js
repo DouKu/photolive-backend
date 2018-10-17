@@ -9,7 +9,7 @@ import {
 import { filterLevelField } from '../service/album';
 import { albumLive } from '../service/mq';
 import { getFsize } from '../service/qiniu';
-import { checkAndDeleteImg } from '../service/image';
+import { checkAndDeleteImg, getFileKey } from '../service/image';
 
 // 添加相册
 const addAlbum = async ctx => {
@@ -22,7 +22,8 @@ const addAlbum = async ctx => {
   body.expiredAt = moment().add(1, 'months').format();
   await dbCreate(body);
   ctx.body = {
-    code: 200
+    code: 200,
+    success: true
   };
 };
 
@@ -42,14 +43,14 @@ const listMyAlbumBrief = async ctx => {
 /** 不含照片 */
 const getAlbumDetail = async ctx => {
   const albumId = ctx.params.albumId;
-  let data = await dbFindOne('Albums', {
-    where: { id: albumId }
-  });
+  let baseData = await dbFindById('Albums', albumId);
+  let configData = await dbFindById('AlbumConfig', albumId);
   let tags = await dbFindAll('Tags', {
     attributes: ['id', 'title'],
     where: { albumId: albumId },
     order: [['id', 'asc']]
   });
+  let data = Object.assign(baseData, configData);
   data = filterLevelField(data, data.albumType);
   data.tags = tags;
   ctx.body = {
@@ -70,7 +71,8 @@ const deleteAlbum = async ctx => {
     where: { albumId: albumId }
   });
   ctx.body = {
-    code: 200
+    code: 200,
+    success: true
   };
 };
 
@@ -96,7 +98,8 @@ const baseCfg = async ctx => {
     where: { id: albumId }
   });
   ctx.body = {
-    code: 200
+    code: 200,
+    success: true
   };
 };
 
@@ -115,7 +118,7 @@ const addTag = async ctx => {
   });
   checkAddTag(album.tags.length, album, ctx);
   const newTag = {
-    albumId: albumId,
+    albumId,
     title
   };
   const data = await dbCreate('Tags', newTag);
@@ -194,7 +197,7 @@ const deleteTag = async ctx => {
   });
   ctx.body = {
     code: 200,
-    msg: '标签删除成功！'
+    success: true
   };
 };
 
@@ -223,7 +226,7 @@ const sortTag = async ctx => {
   });
   ctx.body = {
     code: 200,
-    msg: 'success'
+    tags
   };
 };
 
@@ -244,7 +247,8 @@ const startPageCfg = async ctx => {
     where: { id: albumId }
   });
   ctx.body = {
-    code: 200
+    code: 200,
+    success: true
   };
 };
 
@@ -274,28 +278,28 @@ const addBanner = async ctx => {
     origin: { type: 'string' },
     tiny: { type: 'string' }
   });
-  const albumId = ctx.params.albumId;
+  const albumId = Number(ctx.params.albumId);
   const newBanner = ctx.request.body;
   const albumObj = await dbFindOne('AlbumConfig', {
     where: { id: albumId }
   });
   const banners = albumObj.banners;
   checkAddBanner(albumObj, banners, ctx);
-  const stat = await getFsize(newBanner.origin);
+  const size = await getFsize(newBanner.origin);
   const newImg = await dbCreate('Images', {
-    albumId: albumId,
+    albumId,
     type: nconf.get('imgTyp').banner,
     origin: newBanner.origin,
     tiny: newBanner.tiny,
-    size: stat.fsize
+    size
   });
-  banners.push(Object.assign({ id: newImg.id }, newBanner));
-  await dbUpdate('AlbumCfg', {
+  const data = Object.assign({ id: newImg.id }, newBanner);
+  banners.push(data);
+  await dbUpdate('AlbumConfig', {
     banners
   }, {
     where: { id: albumId }
   });
-  const data = _.omit(newImg, ['tagId', 'min_url', 'des']);
   ctx.body = {
     code: 200,
     data
@@ -314,7 +318,7 @@ const updateBanner = async ctx => {
     origin: { type: 'string' },
     tiny: { type: 'string' }
   });
-  const bannerId = ctx.params.bannerId;
+  const bannerId = Number(ctx.params.bannerId);
   const newBanner = ctx.request.body;
   const oldBanner = await dbFindById('Images', bannerId);
   const albumObj = await dbFindById('AlbumConfig', oldBanner.albumId);
@@ -335,7 +339,8 @@ const updateBanner = async ctx => {
   });
   await checkAndDeleteImg(oldBanner);
   ctx.body = {
-    code: 200
+    code: 200,
+    success: true
   };
 };
 
@@ -359,7 +364,8 @@ const deleteBanner = async ctx => {
   });
   await checkAndDeleteImg(banner);
   ctx.body = {
-    code: 200
+    code: 200,
+    success: true
   };
 };
 
@@ -375,7 +381,7 @@ const sortBanner = async ctx => {
     }
   });
   const ids = ctx.request.body.bannerIds;
-  const albumId = ctx.params.albumId;
+  const albumId = Number(ctx.params.albumId);
   const albumObj = await dbFindById('AlbumConfig', albumId);
   const OldBanners = albumObj.banners;
   const banners = checkSortBanner(albumObj, ids, OldBanners, ctx);
@@ -383,7 +389,8 @@ const sortBanner = async ctx => {
     where: { id: albumId }
   });
   ctx.body = {
-    code: 200
+    code: 200,
+    success: true
   };
 };
 
@@ -395,7 +402,7 @@ function checkSortBanner (albumCfg, ids, OldBanners, ctx) {
     if (objs.length !== 1) {
       ctx.throw(400, '参数错误');
     }
-    banners.push(objs);
+    banners.push(objs[0]);
   }
   return banners;
 }
@@ -423,7 +430,8 @@ const interactiveCfg = async ctx => {
     where: { id: albumId }
   });
   ctx.body = {
-    code: 200
+    code: 200,
+    success: true
   };
 };
 
@@ -451,11 +459,12 @@ const shareCfg = async ctx => {
     where: { id: albumId }
   });
   checkShareCfg(albumObj, ctx);
-  await dbUpdate('Albums', body, {
+  await dbUpdate('AlbumConfig', body, {
     where: { id: albumId }
   });
   ctx.body = {
-    code: 200
+    code: 200,
+    success: true
   };
 };
 
@@ -463,11 +472,67 @@ function checkShareCfg (albumObj, ctx) {
   checkAlbumOwner(albumObj, ctx);
 }
 
+const topAdCfg = async ctx => {
+  ctx.verifyParams({
+    topAd: 'string'
+  });
+  const albumId = ctx.params.albumId;
+  const topAd = ctx.request.body.topAd;
+  const albumObj = await dbFindById('AlbumConfig', albumId);
+  checkTopAdCfg(albumObj, ctx);
+  await dbUpdate('AlbumConfig', { topAd }, {
+    where: { id: albumId }
+  });
+  ctx.body = {
+    code: 200,
+    success: true
+  };
+};
+
+function checkTopAdCfg (albumObj, ctx) {
+  checkAlbumOwner(albumObj, ctx);
+  if (albumObj.albumType < nconf.get('albumLevel:quality')) {
+    ctx.throw(500, '请升级相册解锁顶部广告');
+  }
+}
+
+const bottomAdCfg = async ctx => {
+  ctx.verifyParams({
+    bottomAd: 'string',
+    bottomAdLink: 'string'
+  });
+  const albumId = ctx.params.albumId;
+  const body = ctx.request.body;
+  const albumObj = await dbFindById('AlbumConfig', albumId);
+  checkBottomAdCfg(albumObj, ctx);
+  /** 删除云文件 */
+  const oldFileKey = getFileKey(albumObj.bottomAdLink);
+  const newFileKey = getFileKey(body.bottomAdLink);
+  if (oldFileKey !== newFileKey) {
+    checkAndDeleteImg({ origin: albumObj.bottomAdLink });
+  };
+  await dbUpdate('AlbumConfig', body, {
+    where: { id: albumId }
+  });
+  ctx.body = {
+    code: 200,
+    success: true
+  };
+};
+
+function checkBottomAdCfg (albumObj, ctx) {
+  checkAlbumOwner(albumObj, ctx);
+  if (albumObj.albumType < nconf.get('albumLevel:middle')) {
+    ctx.throw(500, '请升级相册解锁顶部广告');
+  }
+}
+
 const testmq = async ctx => {
   const albumId = ctx.params.albumId;
   albumLive(albumId, { a: 'lalala' });
   ctx.body = {
-    code: 200
+    code: 200,
+    success: true
   };
 };
 
@@ -488,6 +553,8 @@ export {
   sortBanner,
   interactiveCfg,
   shareCfg,
+  topAdCfg,
+  bottomAdCfg,
   testmq
 };
 

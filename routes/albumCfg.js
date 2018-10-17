@@ -10,9 +10,13 @@ import {
   sortTag,
   startPageCfg,
   addBanner,
+  updateBanner,
+  deleteBanner,
   sortBanner,
   interactiveCfg,
   shareCfg,
+  topAdCfg,
+  bottomAdCfg,
   testmq
 } from '../api/controller/albumCfg';
 
@@ -37,13 +41,20 @@ module.exports = (router, authRouter, commonRouter, managerRouter, wechatRouter)
   // 启动页配置
   authRouter.put('/album/cfg/startpage/:albumId', startPageCfg);
   // 相册banner配置
-  authRouter.put('/album/cfg/banner/:albumId', addBanner);
+  authRouter.put('/album/cfg/banner/add/:albumId', addBanner);
+  // banner 修改
+  authRouter.put('/album/cfg/banner/:bannerId', updateBanner);
+  // 删除banner
+  authRouter.delete('/album/cfg/banner/:bannerId', deleteBanner);
   // banner排序
-
+  authRouter.put('/album/cfg/banner/sort/:albumId', sortBanner);
   // 互动配置
   authRouter.put('/album/cfg/interactive/:albumId', interactiveCfg);
   // 相册分享配置
   authRouter.put('/album/cfg/share/:albumId', shareCfg);
-
+  // 顶部广告
+  authRouter.put('/album/cfg/topad/:albumId', topAdCfg);
+  // 底部广告
+  authRouter.put('/album/cfg/bottomad/:albumId', bottomAdCfg);
   commonRouter.get('/album/testmq/:albumId', testmq);
 };

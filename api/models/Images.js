@@ -41,7 +41,7 @@ export default (sequelize, DataTypes) => {
         defaultValue: ''
       }, // 极压缩图url
       des: {
-        type: STRING(30),
+        type: STRING(10),
         allowNull: false,
         defaultValue: ''
       }, // 图片描述

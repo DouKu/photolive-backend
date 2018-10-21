@@ -96,9 +96,10 @@ export default (sequelize, DataTypes) => {
     return hmac.digest('hex');
   }
 
-  // Users.associate = Models => {
-  //   Models.Users.hasMany(Models.Albums, { foreignKey: 'userId' });
-  // };
+  Users.associate = Models => {
+    Models.Users.hasMany(Models.Albums, { foreignKey: 'userId' });
+    Models.Users.hasMany(Models.AlbumConfig, { foreignKey: 'userId' });
+  };
 
   Users.checkToken = async function (token) {
     const user = await this.findById(token.id);

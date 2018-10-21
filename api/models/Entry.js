@@ -24,6 +24,11 @@ export default (sequelize, DataTypes) => {
         allowNull: false,
         defaultValue: ''
       }, // 描述
+      avatar: {
+        type: STRING(512),
+        allowNull: false,
+        defaultValue: ''
+      }, // logo图
       link: {
         type: STRING(512),
         allowNull: false,
@@ -39,10 +44,10 @@ export default (sequelize, DataTypes) => {
     }
   );
 
-  // Entry.associate = Models => {
-  //   Models.Entry.belongsTo(Models.Albums, { foreignKey: 'albumId' });
-  //   Models.Entry.belongsTo(Models.AlbumConfig, { foreignKey: 'albumId' });
-  // };
+  Entry.associate = Models => {
+    Models.Entry.belongsTo(Models.Albums, { foreignKey: 'albumId' });
+    Models.Entry.belongsTo(Models.AlbumConfig, { foreignKey: 'albumId' });
+  };
 
   return Entry;
 };

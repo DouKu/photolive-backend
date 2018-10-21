@@ -101,6 +101,11 @@ export default (sequelize, DataTypes) => {
         allowNull: false,
         defaultValue: ''
       }, // 水印url
+      entryCards: {
+        type: ARRAY(JSONB),
+        allowNull: false,
+        defaultValue: []
+      }, // 词条卡片
       configJudge: {
         type: JSONB,
         allowNull: false,
@@ -127,11 +132,11 @@ export default (sequelize, DataTypes) => {
 
   AlbumConfig.associate = Models => {
     Models.AlbumConfig.belongsTo(Models.Albums, { foreignKey: 'id' });
-    // Models.AlbumConfig.hasOne(Models.Entry, { foreignKey: 'albumId' });
-    // Models.AlbumConfig.hasMany(Models.EntryCard, { foreignKey: 'albumId' });
-    // Models.AlbumConfig.hasMany(Models.Tags, { foreignKey: 'albumId' });
-    // Models.AlbumConfig.hasMany(Models.Images, { foreignKey: 'albumId' });
-    // Models.AlbumConfig.belongsTo(Models.Users, { foreignKey: 'userId' });
+    Models.AlbumConfig.hasOne(Models.Entry, { foreignKey: 'albumId' });
+    Models.AlbumConfig.hasMany(Models.EntryCard, { foreignKey: 'albumId' });
+    Models.AlbumConfig.hasMany(Models.Tags, { foreignKey: 'albumId' });
+    Models.AlbumConfig.hasMany(Models.Images, { foreignKey: 'albumId' });
+    Models.AlbumConfig.belongsTo(Models.Users, { foreignKey: 'userId' });
   };
 
   return AlbumConfig;

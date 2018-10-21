@@ -15,7 +15,7 @@ export default (sequelize, DataTypes) => {
         allowNull: false
       }, // 相册id外键
       title: {
-        type: STRING(50),
+        type: STRING(20),
         allowNull: false,
         defaultValue: ''
       }, // 标题
@@ -25,7 +25,7 @@ export default (sequelize, DataTypes) => {
         defaultValue: ''
       }, // 图片
       des: {
-        type: STRING(200),
+        type: STRING(50),
         allowNull: false,
         defaultValue: ''
       }, // 描述
@@ -44,10 +44,10 @@ export default (sequelize, DataTypes) => {
     }
   );
 
-  // EntryCard.associate = Models => {
-  //   Models.EntryCard.belongsTo(Models.Albums, { foreignKey: 'albumId' });
-  //   Models.EntryCard.belongsTo(Models.AlbumConfig, { foreignKey: 'albumId' });
-  // };
+  EntryCard.associate = Models => {
+    Models.EntryCard.belongsTo(Models.Albums, { foreignKey: 'albumId' });
+    Models.EntryCard.belongsTo(Models.AlbumConfig, { foreignKey: 'albumId' });
+  };
 
   return EntryCard;
 };

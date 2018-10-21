@@ -242,10 +242,11 @@ const startPageCfg = async ctx => {
   const albumObj = await dbFindOne('AlbumConfig', {
     where: { id: albumId }
   });
-  checkStartPageCfg(albumObj, body, ctx);
+  const deleteImgs = checkStartPageCfg(albumObj, body, ctx);
   await dbUpdate('AlbumConfig', body, {
     where: { id: albumId }
   });
+  await checkAndDeleteImg(deleteImgs);
   ctx.body = {
     code: 200,
     success: true
@@ -254,21 +255,25 @@ const startPageCfg = async ctx => {
 
 function checkStartPageCfg (albumObj, body, ctx) {
   checkAlbumOwner(albumObj, ctx);
+  const deleteImg = [];
   if (body.startPage !== null && body.startPage !== undefined) {
     if (body.tinyStartPage === null || body.tinyStartPage === undefined) {
       ctx.throw(423, '参数错误');
     }
+    deleteImg.push({ old: albumObj.startPage, new: body.startPage });
   }
   if (body.tinyStartPage !== null && body.tinyStartPage !== undefined) {
     if (body.startPage === null || body.startPage === undefined) {
       ctx.throw(423, '参数错误');
     }
+    deleteImg.push({ old: albumObj.tinyStartPage, new: body.tinyStartPage });
   }
   const gif = body.loadingGif;
   if (gif !== null && gif !== undefined) {
     if (!getAlbumAccess(albumObj.albumType, 'gif')) {
       ctx.throw(400, '该相册不允许配置加载gif，请升级相册');
     }
+    deleteImg.push({ old: albumObj.loadingGif, new: gif });
   }
 }
 
@@ -509,7 +514,7 @@ const bottomAdCfg = async ctx => {
   const oldFileKey = getFileKey(albumObj.bottomAdLink);
   const newFileKey = getFileKey(body.bottomAdLink);
   if (oldFileKey !== newFileKey) {
-    checkAndDeleteImg({ origin: albumObj.bottomAdLink });
+    checkAndDeleteImg(albumObj.bottomAdLink);
   };
   await dbUpdate('AlbumConfig', body, {
     where: { id: albumId }
@@ -524,6 +529,171 @@ function checkBottomAdCfg (albumObj, ctx) {
   checkAlbumOwner(albumObj, ctx);
   if (albumObj.albumType < nconf.get('albumLevel:middle')) {
     ctx.throw(500, '请升级相册解锁顶部广告');
+  }
+}
+
+const entryCfg = async ctx => {
+  ctx.verifyParams({
+    title: { type: 'string', required: false },
+    des: { type: 'string', required: false },
+    avatar: { type: 'string', required: false },
+    link: { type: 'string', required: false }
+  });
+  const albumId = Number(ctx.params.albumId);
+  const body = ctx.request.body;
+  const albumObj = await dbFindById('AlbumConfig', albumId);
+  const entry = await dbFindOne('Entry', { where: { albumId } });
+  checkEntryCfg(albumObj, ctx);
+  await dbUpdateOne('Entry', body, { where: { id: entry.id } });
+  ctx.body = {
+    code: 200,
+    success: true
+  };
+};
+
+function checkEntryCfg (albumObj, ctx) {
+  checkAlbumOwner(albumObj, ctx);
+  if (albumObj.albumType < nconf.get('albumLevel:middle')) {
+    ctx.throw(500, '请升级相册解锁词条配置');
+  }
+}
+
+const addEntryCard = async ctx => {
+  ctx.verifyParams({
+    title: 'string',
+    des: { type: 'string', required: false },
+    avatar: 'string',
+    link: { type: 'string', required: false }
+  });
+  const albumId = Number(ctx.params.albumId);
+  const body = ctx.request.body;
+  const albumObj = await dbFindById('AlbumConfig', albumId);
+  checkAddEntryCard(albumObj, ctx);
+  const newEntryCard = await dbCreate('EntryCard', body);
+  const newCards = albumObj.endryCards;
+  newCards.push(Object.assign({ id: newEntryCard.id }, {
+    title: body.title,
+    avatar: body.avatar,
+    link: body.link
+  }));
+  await dbUpdateOne('AlbumConfig', { entryCards: newCards }, {
+    where: { id: albumId }
+  });
+  ctx.body = {
+    code: 200,
+    success: true
+  };
+};
+
+function checkAddEntryCard (albumObj, ctx) {
+  checkAlbumOwner(albumObj, ctx);
+  if (albumObj.albumType < nconf.get('albumLevel:middle')) {
+    ctx.throw(500, '请升级相册解锁词条卡片配置');
+  }
+  if (albumObj.entryCard.length >= getAlbumAccess(albumObj.albumType, 'entryCards')) {
+    ctx.throw(500, '词条卡片配置超出上限');
+  }
+}
+
+const updateEntryCard = async ctx => {
+  ctx.verifyParams({
+    title: 'string',
+    des: { type: 'string', required: false },
+    avatar: 'string',
+    link: 'string'
+  });
+  const entryCardId = Number(ctx.params.entryCardId);
+  const body = ctx.request.body;
+  const entryCard = await dbFindById('EntryCard', entryCardId);
+  const albumObj = await dbFindById('AlbumConfig', entryCard.albumId);
+  checkUpdateEntryCard(albumObj, ctx);
+  const entryCardList = albumObj.endryCards;
+  for (let i = 0; i < entryCardList.length; i++) {
+    if (entryCardList[i].id === entryCardId) {
+      entryCardList[i] = Object.assign({ id: entryCardId }, {
+        title: body.title,
+        avatar: body.avatar,
+        link: body.link
+      });
+      break;
+    }
+  }
+  const deleteImgs = [
+    { old: entryCard.avatar, new: body.avatar },
+    { old: entryCard.link, new: body.link }
+  ];
+  await checkAndDeleteImg(deleteImgs);
+  await dbUpdateOne('EntryCard', body, { where: { id: entryCardId } });
+  await dbUpdateOne('AlbumConfig', { entryCards: entryCardList }, { where: { id: albumObj.id } });
+  ctx.body = {
+    code: 200,
+    success: true
+  };
+};
+
+function checkUpdateEntryCard (albumObj, ctx) {
+  checkAlbumOwner(albumObj, ctx);
+  if (albumObj.albumType < nconf.get('albumLevel:middle')) {
+    ctx.throw(500, '请升级相册解锁词条卡片配置');
+  }
+}
+
+const deleteEntryCard = async ctx => {
+  const entryCardId = Number(ctx.params.entryCardId);
+  const entryCard = await dbFindById('EntryCard', entryCardId);
+  const albumCfg = await dbFindById('AlbumConfig', entryCard.albumId);
+  checkDeleteEntryCard(albumCfg, ctx);
+  _.remove(albumCfg.endryCards, o => {
+    return String(o.id) === entryCardId;
+  });
+  await dbDestroy('EntryCard', {
+    where: { id: entryCardId }
+  });
+  await dbUpdateOne('AlbumConfig', { endryCards: albumCfg.entryCards }, {
+    where: { id: entryCard.albumId }
+  });
+  await checkAndDeleteImg(entryCard.link);
+  await checkAndDeleteImg(entryCard.avatar);
+  ctx.body = {
+    code: 200,
+    success: true
+  };
+};
+
+const sortEntryCard = async ctx => {
+  ctx.verifyParams({
+    entryCards: { type: 'array', itemType: 'int' }
+  });
+  const albumId = Number(ctx.params.albumId);
+  const cardIds = ctx.request.body;
+  const albumObj = await dbFindById('AlbumConfig', albumId);
+  const newCards = checkSortEntryCard(albumObj, cardIds, ctx);
+  await dbUpdateOne('AlbumConfig', { entryCards: newCards }, {
+    where: { id: albumId }
+  });
+  ctx.body = {
+    code: 200,
+    success: true
+  };
+};
+
+function checkSortEntryCard (albumObj, cardIds, ctx) {
+  checkAlbumOwner(albumObj, ctx);
+  const newCards = [];
+  for (let id of cardIds) {
+    const oldCard = _.filter(albumObj.entryCards, o => { return o.id === id; });
+    if (oldCard.length === 0) {
+      ctx.throw(400, '参数错误');
+    }
+    newCards.push(oldCard[0]);
+  }
+  return newCards;
+}
+
+function checkDeleteEntryCard (albumObj, ctx) {
+  checkAlbumOwner(albumObj, ctx);
+  if (albumObj.albumType < nconf.get('albumLevel:middle')) {
+    ctx.throw(500, '请升级相册解锁词条卡片配置');
   }
 }
 
@@ -555,6 +725,11 @@ export {
   shareCfg,
   topAdCfg,
   bottomAdCfg,
+  entryCfg,
+  addEntryCard,
+  updateEntryCard,
+  deleteEntryCard,
+  sortEntryCard,
   testmq
 };
 

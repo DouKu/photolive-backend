@@ -65,9 +65,9 @@ export default (sequelize, DataTypes) => {
     }
   );
 
-  // Images.associate = Models => {
-  //   Models.Images.belongsTo(Models.Albums, { foreignKey: 'albumId' });
-  //   Models.Images.belongsTo(Models.Tags, { foreignKey: 'tagId' });
-  // };
+  Images.associate = Models => {
+    Models.Images.belongsTo(Models.Albums, { foreignKey: 'albumId' });
+    // Models.Images.belongsTo(Models.Tags, { foreignKey: 'tagId' });
+  };
   return Images;
 };

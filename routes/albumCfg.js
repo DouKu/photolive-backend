@@ -17,6 +17,11 @@ import {
   shareCfg,
   topAdCfg,
   bottomAdCfg,
+  entryCfg,
+  addEntryCard,
+  updateEntryCard,
+  deleteEntryCard,
+  sortEntryCard,
   testmq
 } from '../api/controller/albumCfg';
 
@@ -56,5 +61,15 @@ module.exports = (router, authRouter, commonRouter, managerRouter, wechatRouter)
   authRouter.put('/album/cfg/topad/:albumId', topAdCfg);
   // 底部广告
   authRouter.put('/album/cfg/bottomad/:albumId', bottomAdCfg);
+  // 词条
+  authRouter.put('/album/cfg/entry/:albumId', entryCfg);
+  // 添加词条卡片
+  authRouter.put('/album/cfg/entrycard/add/:albumId', addEntryCard);
+  // 修改词条卡片
+  authRouter.put('/album/cfg/entrycard/:entryCardId', updateEntryCard);
+  // 删除词条卡片
+  authRouter.delete('/album/cfg/entrycard/:entryCardId', deleteEntryCard);
+  // 排序词条卡片
+  authRouter.put('/album/cfg/entrycard/sort/:albumId', sortEntryCard);
   commonRouter.get('/album/testmq/:albumId', testmq);
 };

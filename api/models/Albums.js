@@ -83,11 +83,11 @@ export default (sequelize, DataTypes) => {
 
   Albums.associate = Models => {
     Models.Albums.hasOne(Models.AlbumConfig, { foreignKey: 'id' });
-    // Models.AlbumConfig.hasMany(Models.EntryCard, { foreignKey: 'albumId' });
-    // Models.Albums.hasOne(Models.Entry, { foreignKey: 'albumId' });
-    // Models.Albums.hasMany(Models.Tags, { foreignKey: 'albumId' });
-    // Models.Albums.hasMany(Models.Images, { foreignKey: 'albumId' });
-    // Models.Albums.belongsTo(Models.Users, { foreignKey: 'userId' });
+    Models.Albums.hasMany(Models.EntryCard, { foreignKey: 'albumId' });
+    Models.Albums.hasOne(Models.Entry, { foreignKey: 'albumId' });
+    Models.Albums.hasMany(Models.Tags, { foreignKey: 'albumId' });
+    Models.Albums.hasMany(Models.Images, { foreignKey: 'albumId' });
+    Models.Albums.belongsTo(Models.Users, { foreignKey: 'userId' });
   };
 
   return Albums;

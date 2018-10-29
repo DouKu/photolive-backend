@@ -4,7 +4,8 @@ import {
   emailLogin,
   phoneLogin,
   register,
-  checkUserExist
+  checkUserExist,
+  userInfo
 } from '../api/controller/user';
 
 module.exports = (router, authRouter, commonRouter, managerRouter, wechatRouter) => {
@@ -18,4 +19,6 @@ module.exports = (router, authRouter, commonRouter, managerRouter, wechatRouter)
   commonRouter.post('/register', register);
   // 检查账号是否存在
   commonRouter.get('/user/check', checkUserExist);
+  // 用户信息
+  authRouter.get('/user/info/brief', userInfo);
 };

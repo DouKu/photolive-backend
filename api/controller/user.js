@@ -2,7 +2,7 @@
 import _ from 'lodash';
 import { Models } from '../../config/sequelize';
 import { signToken } from '../service/base';
-import { dbFindOne } from '../service/dbtools';
+import { dbFindOne, dbFindById, dbFindAll } from '../service/dbtools';
 
 const accountLogin = async ctx => {
   ctx.verifyParams({
@@ -132,12 +132,28 @@ function checkRegister (obj, ctx) {
   }
 }
 
+const userInfo = async ctx => {
+  let userBase = await dbFindById('Users', ctx.state.userMess.id);
+  const userAlbums = await dbFindAll('Albums', {
+    where: {
+      userId: ctx.state.userMess.id
+    }
+  });
+  userBase = filterloginFeild(userBase);
+  const data = Object.assign({ user: userBase }, { albums: userAlbums });
+  ctx.body = {
+    code: 200,
+    data
+  };
+};
+
 export {
   accountLogin,
   emailLogin,
   phoneLogin,
   register,
-  checkUserExist
+  checkUserExist,
+  userInfo
 };
 
 function filterloginFeild (user) {

@@ -50,9 +50,11 @@ const getAlbumDetail = async ctx => {
     where: { albumId: albumId },
     order: [['id', 'asc']]
   });
+  let entry = await dbFindOne('Entry', { where: { albumId } });
   let data = Object.assign(baseData, configData);
   data = filterLevelField(data, data.albumType);
   data.tags = tags;
+  data.entry = entry;
   ctx.body = {
     code: 200,
     data
@@ -569,8 +571,8 @@ const addEntryCard = async ctx => {
   const body = ctx.request.body;
   const albumObj = await dbFindById('AlbumConfig', albumId);
   checkAddEntryCard(albumObj, ctx);
-  const newEntryCard = await dbCreate('EntryCard', body);
-  const newCards = albumObj.endryCards;
+  const newEntryCard = await dbCreate('EntryCard', Object.assign({ albumId: albumObj.id }, body));
+  const newCards = albumObj.entryCards;
   newCards.push(Object.assign({ id: newEntryCard.id }, {
     title: body.title,
     avatar: body.avatar,
@@ -581,7 +583,7 @@ const addEntryCard = async ctx => {
   });
   ctx.body = {
     code: 200,
-    success: true
+    data: newEntryCard
   };
 };
 
@@ -590,7 +592,7 @@ function checkAddEntryCard (albumObj, ctx) {
   if (albumObj.albumType < nconf.get('albumLevel:middle')) {
     ctx.throw(500, '请升级相册解锁词条卡片配置');
   }
-  if (albumObj.entryCard.length >= getAlbumAccess(albumObj.albumType, 'entryCards')) {
+  if (albumObj.entryCards.length >= getAlbumAccess(albumObj.albumType, 'entryCards')) {
     ctx.throw(500, '词条卡片配置超出上限');
   }
 }
@@ -607,7 +609,7 @@ const updateEntryCard = async ctx => {
   const entryCard = await dbFindById('EntryCard', entryCardId);
   const albumObj = await dbFindById('AlbumConfig', entryCard.albumId);
   checkUpdateEntryCard(albumObj, ctx);
-  const entryCardList = albumObj.endryCards;
+  const entryCardList = albumObj.entryCards;
   for (let i = 0; i < entryCardList.length; i++) {
     if (entryCardList[i].id === entryCardId) {
       entryCardList[i] = Object.assign({ id: entryCardId }, {
@@ -627,7 +629,7 @@ const updateEntryCard = async ctx => {
   await dbUpdateOne('AlbumConfig', { entryCards: entryCardList }, { where: { id: albumObj.id } });
   ctx.body = {
     code: 200,
-    success: true
+    data: Object.assign({ id: entryCardId }, body)
   };
 };
 
@@ -643,13 +645,14 @@ const deleteEntryCard = async ctx => {
   const entryCard = await dbFindById('EntryCard', entryCardId);
   const albumCfg = await dbFindById('AlbumConfig', entryCard.albumId);
   checkDeleteEntryCard(albumCfg, ctx);
-  _.remove(albumCfg.endryCards, o => {
-    return String(o.id) === entryCardId;
+  const newEntryCard = albumCfg.entryCards;
+  _.remove(newEntryCard, o => {
+    return o.id === entryCardId;
   });
   await dbDestroy('EntryCard', {
     where: { id: entryCardId }
   });
-  await dbUpdateOne('AlbumConfig', { endryCards: albumCfg.entryCards }, {
+  await dbUpdateOne('AlbumConfig', { entryCards: newEntryCard }, {
     where: { id: entryCard.albumId }
   });
   await checkAndDeleteImg(entryCard.link);
@@ -665,7 +668,7 @@ const sortEntryCard = async ctx => {
     entryCards: { type: 'array', itemType: 'int' }
   });
   const albumId = Number(ctx.params.albumId);
-  const cardIds = ctx.request.body;
+  const cardIds = ctx.request.body.entryCards;
   const albumObj = await dbFindById('AlbumConfig', albumId);
   const newCards = checkSortEntryCard(albumObj, cardIds, ctx);
   await dbUpdateOne('AlbumConfig', { entryCards: newCards }, {
@@ -673,7 +676,7 @@ const sortEntryCard = async ctx => {
   });
   ctx.body = {
     code: 200,
-    success: true
+    data: newCards
   };
 };
 

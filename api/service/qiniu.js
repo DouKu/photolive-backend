@@ -149,7 +149,8 @@ function fileStat (key) {
         if (respInfo.statusCode === 200) {
           resolve(respBody);
         } else {
-          reject(respBody.error);
+          const error = transfromError(respInfo.statusCode);
+          reject(error);
         }
       }
     });
@@ -157,9 +158,15 @@ function fileStat (key) {
 }
 
 async function getFsize (url) {
-  const key = url.match(/(\w)+(\.jpg|\.png|\.jpeg)/)[0];
+  const key = url.match(/(\w|-)+(\.jpg|\.png|\.jpeg)/)[0];
   const stat = await fileStat(key);
   return stat.fsize;
+}
+
+async function getFstat (url) {
+  const key = url.match(/(\w)+(\.jpg|\.png|\.jpeg)/)[0];
+  const stat = await fileStat(key);
+  return stat;
 }
 
 function deleteFile (key) {
@@ -182,5 +189,16 @@ export {
   upload64,
   fileStat,
   getFsize,
+  getFstat,
   deleteFile
 };
+
+function transfromError (code, error) {
+  switch (code) {
+    case 400: return '请求报文格式错误';
+    case 401: return '管理凭证无效';
+    case 599: return '服务内部错误';
+    case 612: return '文件不存在';
+    default: return error;
+  }
+}

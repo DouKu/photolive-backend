@@ -61,6 +61,11 @@ export default (sequelize, DataTypes) => {
         allowNull: false,
         defaultValue: 0
       }, // 编辑过期时间
+      imgNum: {
+        type: INTEGER,
+        allowNull: false,
+        defaultValue: 0
+      }, // 图片数量
       createdAt: {
         type: BIGINT,
         allowNull: false,

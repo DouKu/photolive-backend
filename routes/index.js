@@ -42,6 +42,7 @@ require('./albumCfg')(router, authRouter, commonRouter, managerRouter, wechatRou
 require('./qiniu')(router, authRouter, commonRouter, managerRouter, wechatRouter);
 require('./wechatApp')(router, authRouter, commonRouter, managerRouter, wechatRouter);
 require('./wechat')(router, authRouter, commonRouter, managerRouter, wechatRouter);
+require('./images')(router, authRouter, commonRouter, managerRouter, wechatRouter);
 
 /** 整合路由 */
 router.use(commonRouter.routes(), commonRouter.allowedMethods());

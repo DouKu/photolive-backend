@@ -41,7 +41,7 @@ export default (sequelize, DataTypes) => {
         defaultValue: ''
       }, // 极压缩图url
       des: {
-        type: STRING(10),
+        type: STRING(30),
         allowNull: false,
         defaultValue: ''
       }, // 图片描述
@@ -59,7 +59,7 @@ export default (sequelize, DataTypes) => {
       indexes: [
         {
           method: 'BTREE',
-          fields: ['albumId', 'type', 'origin', 'tiny', 'min']
+          fields: ['albumId', 'type']
         }
       ]
     }

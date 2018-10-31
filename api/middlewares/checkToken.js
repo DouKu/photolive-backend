@@ -11,7 +11,7 @@ export default () => {
         ctx.state.userMess = user;
         await next();
       } else {
-        ctx.throw(501, 'token信息异常');
+        ctx.throw(403, 'token信息异常');
       }
     } else {
       ctx.throw(401, 'token丢失');

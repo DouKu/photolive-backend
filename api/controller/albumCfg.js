@@ -81,6 +81,18 @@ const deleteAlbum = async ctx => {
 /** ************************************************** */
 /** 分开配置信息 */
 
+const getBase = async ctx => {
+  const albumId = Number(ctx.params.albumId);
+  const data = await dbFindOne('Albums', {
+    attributes: ['id', 'name', 'activityTime', 'location', 'themeId'],
+    where: { id: albumId }
+  });
+  ctx.body = {
+    code: 200,
+    data
+  };
+};
+
 const baseCfg = async ctx => {
   ctx.verifyParams({
     name: 'string',
@@ -88,15 +100,16 @@ const baseCfg = async ctx => {
     location: 'string',
     themeId: 'int'
   });
-  const albumId = ctx.params.albumId;
+  const albumId = Number(ctx.params.albumId);
   let body = ctx.request.body;
   // 检查更新
-  const albumObj = await dbFindOne('AlbumConfig', {
+  const albumObj = await dbFindOne('Albums', {
     where: { id: albumId }
   });
+  const cfgObj = await dbFindById('AlbumConfig', albumId);
   checkBaseCfg(albumObj, ctx);
-  body = changeConfigJudge(albumObj, body, 'base', true);
-  await dbUpdate('AlbumConfig', body, {
+  await changeConfigJudge(cfgObj, 'base', true);
+  await dbUpdate('Albums', body, {
     where: { id: albumId }
   });
   ctx.body = {
@@ -108,6 +121,18 @@ const baseCfg = async ctx => {
 function checkBaseCfg (albumObj, ctx) {
   checkAlbumOwner(albumObj, ctx);
 }
+
+const getAlubmTag = async ctx => {
+  const albumId = Number(ctx.params.albumId);
+  const data = await dbFindOne('AlbumConfig', {
+    attributes: ['id', 'tags'],
+    where: { id: albumId }
+  });
+  ctx.body = {
+    code: 200,
+    data
+  };
+};
 
 const addTag = async ctx => {
   ctx.verifyParams({
@@ -126,6 +151,7 @@ const addTag = async ctx => {
   const data = await dbCreate('Tags', newTag);
   const tags = album.tags;
   tags.push({ id: data.id, title });
+  await changeConfigJudge(album, 'tag', true);
   await dbUpdateOne('AlbumConfig', { tags }, {
     where: { id: albumId }
   });
@@ -164,6 +190,7 @@ const updateTag = async ctx => {
       break;
     }
   }
+  await changeConfigJudge(albumCfg, 'tag', true);
   await dbUpdateOne('AlbumConfig', { tags: albumCfg.tags }, {
     where: { id: tag.albumId }
   });
@@ -194,6 +221,7 @@ const deleteTag = async ctx => {
   _.remove(albumCfg.tags, o => {
     return String(o.id) === tagId;
   });
+  await changeConfigJudge(albumCfg, 'tag', true);
   await dbUpdateOne('AlbumConfig', { tags: albumCfg.tags }, {
     where: { id: tag.albumId }
   });
@@ -223,12 +251,26 @@ const sortTag = async ctx => {
   });
   const albumId = ctx.params.albumId;
   const tags = ctx.request.body.tags;
+  const albumCfg = await dbFindById('AlbumConfig', albumId);
+  await changeConfigJudge(albumCfg, 'tag', true);
   await dbUpdateOne('AlbumConfig', { tags }, {
     where: { id: albumId }
   });
   ctx.body = {
     code: 200,
     tags
+  };
+};
+
+const getStartPage = async ctx => {
+  const albumId = Number(ctx.params.albumId);
+  const data = await dbFindOne('AlbumConfig', {
+    attributes: ['id', 'startPage', 'tinyStartPage', 'loadingGif', 'countDown'],
+    where: { id: albumId }
+  });
+  ctx.body = {
+    code: 200,
+    data
   };
 };
 
@@ -248,6 +290,7 @@ const startPageCfg = async ctx => {
   await dbUpdate('AlbumConfig', body, {
     where: { id: albumId }
   });
+  await changeConfigJudge(albumObj, 'startPage', true);
   await checkAndDeleteImg(deleteImgs);
   ctx.body = {
     code: 200,
@@ -279,6 +322,18 @@ function checkStartPageCfg (albumObj, body, ctx) {
   }
 }
 
+const getBanners = async ctx => {
+  const albumId = Number(ctx.params.albumId);
+  const data = await dbFindOne('AlbumConfig', {
+    attributes: ['id', 'banners'],
+    where: { id: albumId }
+  });
+  ctx.body = {
+    code: 200,
+    data
+  };
+};
+
 /** 验证文件版 */
 const addBanner = async ctx => {
   ctx.verifyParams({
@@ -302,6 +357,7 @@ const addBanner = async ctx => {
   });
   const data = Object.assign({ id: newImg.id }, newBanner);
   banners.push(data);
+  await changeConfigJudge(albumObj, 'banner', true);
   await dbUpdate('AlbumConfig', {
     banners
   }, {
@@ -337,6 +393,7 @@ const updateBanner = async ctx => {
       break;
     }
   }
+  await changeConfigJudge(albumObj, 'banner', true);
   await dbUpdateOne('Images', {
     origin: newBanner.origin,
     tiny: newBanner.tiny
@@ -369,6 +426,7 @@ const deleteBanner = async ctx => {
   await dbUpdateOne('AlbumConfig', { banners: albumCfg.banners }, {
     where: { id: banner.albumId }
   });
+  await changeConfigJudge(albumCfg, 'banner', true);
   await checkAndDeleteImg(banner);
   ctx.body = {
     code: 200,
@@ -392,6 +450,7 @@ const sortBanner = async ctx => {
   const albumObj = await dbFindById('AlbumConfig', albumId);
   const OldBanners = albumObj.banners;
   const banners = checkSortBanner(albumObj, ids, OldBanners, ctx);
+  await changeConfigJudge(albumObj, 'banner', true);
   await dbUpdateOne('AlbumConfig', { banners }, {
     where: { id: albumId }
   });
@@ -414,6 +473,18 @@ function checkSortBanner (albumCfg, ids, OldBanners, ctx) {
   return banners;
 }
 
+const getInteractive = async ctx => {
+  const albumId = Number(ctx.params.albumId);
+  const data = await dbFindOne('AlbumConfig', {
+    attributes: ['id', 'interactive'],
+    where: { id: albumId }
+  });
+  ctx.body = {
+    code: 200,
+    data
+  };
+};
+
 const interactiveCfg = async ctx => {
   ctx.verifyParams({
     interactive: {
@@ -428,12 +499,13 @@ const interactiveCfg = async ctx => {
   });
   const albumId = ctx.params.albumId;
   const body = ctx.request.body;
-  const albumObj = await dbFindOne('Albums', {
+  const albumObj = await dbFindOne('AlbumConfig', {
     where: { id: albumId }
   });
   checkInteractiveCfg(albumObj, body.interactive, ctx);
   const newInteractive = Object.assign(albumObj.interactive, body.interactive);
-  await dbUpdate('Albums', { interactive: newInteractive }, {
+  await changeConfigJudge(albumObj, 'interactive', true);
+  await dbUpdate('AlbumConfig', { interactive: newInteractive }, {
     where: { id: albumId }
   });
   ctx.body = {
@@ -454,6 +526,18 @@ function checkInteractiveCfg (album, data, ctx) {
   }
 }
 
+const getShare = async ctx => {
+  const albumId = Number(ctx.params.albumId);
+  const data = await dbFindOne('AlbumConfig', {
+    attributes: ['id', 'shareAvatar', 'shareTitle', 'shareDes'],
+    where: { id: albumId }
+  });
+  ctx.body = {
+    code: 200,
+    data
+  };
+};
+
 const shareCfg = async ctx => {
   ctx.verifyParams({
     shareAvatar: { type: 'string', required: false },
@@ -466,6 +550,7 @@ const shareCfg = async ctx => {
     where: { id: albumId }
   });
   checkShareCfg(albumObj, ctx);
+  await changeConfigJudge(albumObj, 'share', true);
   await dbUpdate('AlbumConfig', body, {
     where: { id: albumId }
   });
@@ -479,6 +564,18 @@ function checkShareCfg (albumObj, ctx) {
   checkAlbumOwner(albumObj, ctx);
 }
 
+const getTopAd = async ctx => {
+  const albumId = Number(ctx.params.albumId);
+  const data = await dbFindOne('AlbumConfig', {
+    attributes: ['id', 'topAd'],
+    where: { id: albumId }
+  });
+  ctx.body = {
+    code: 200,
+    data
+  };
+};
+
 const topAdCfg = async ctx => {
   ctx.verifyParams({
     topAd: 'string'
@@ -487,6 +584,7 @@ const topAdCfg = async ctx => {
   const topAd = ctx.request.body.topAd;
   const albumObj = await dbFindById('AlbumConfig', albumId);
   checkTopAdCfg(albumObj, ctx);
+  await changeConfigJudge(albumObj, 'topAd', true);
   await dbUpdate('AlbumConfig', { topAd }, {
     where: { id: albumId }
   });
@@ -503,6 +601,18 @@ function checkTopAdCfg (albumObj, ctx) {
   }
 }
 
+const getBottomAd = async ctx => {
+  const albumId = Number(ctx.params.albumId);
+  const data = await dbFindOne('AlbumConfig', {
+    attributes: ['id', 'bottomAd', 'bottomAdLink'],
+    where: { id: albumId }
+  });
+  ctx.body = {
+    code: 200,
+    data
+  };
+};
+
 const bottomAdCfg = async ctx => {
   ctx.verifyParams({
     bottomAd: 'string',
@@ -518,6 +628,7 @@ const bottomAdCfg = async ctx => {
   if (oldFileKey !== newFileKey) {
     checkAndDeleteImg(albumObj.bottomAdLink);
   };
+  await changeConfigJudge(albumObj, 'bottomAd', true);
   await dbUpdate('AlbumConfig', body, {
     where: { id: albumId }
   });
@@ -534,6 +645,22 @@ function checkBottomAdCfg (albumObj, ctx) {
   }
 }
 
+const getEntryCfg = async ctx => {
+  const albumId = Number(ctx.params.albumId);
+  const entry = await dbFindOne('Entry', {
+    where: { albumId }
+  });
+  const album = await dbFindOne('AlbumConfig', {
+    attributes: ['entryCards'],
+    where: { id: albumId }
+  });
+  const data = { id: albumId, entry, entryCards: album.entryCards };
+  ctx.body = {
+    code: 200,
+    data
+  };
+};
+
 const entryCfg = async ctx => {
   ctx.verifyParams({
     title: { type: 'string', required: false },
@@ -546,6 +673,7 @@ const entryCfg = async ctx => {
   const albumObj = await dbFindById('AlbumConfig', albumId);
   const entry = await dbFindOne('Entry', { where: { albumId } });
   checkEntryCfg(albumObj, ctx);
+  await changeConfigJudge(albumObj, 'entryCard', true);
   await dbUpdateOne('Entry', body, { where: { id: entry.id } });
   ctx.body = {
     code: 200,
@@ -578,6 +706,7 @@ const addEntryCard = async ctx => {
     avatar: body.avatar,
     link: body.link
   }));
+  await changeConfigJudge(albumObj, 'entryCard', true);
   await dbUpdateOne('AlbumConfig', { entryCards: newCards }, {
     where: { id: albumId }
   });
@@ -624,6 +753,7 @@ const updateEntryCard = async ctx => {
     { old: entryCard.avatar, new: body.avatar },
     { old: entryCard.link, new: body.link }
   ];
+  await changeConfigJudge(albumObj, 'entryCard', true);
   await checkAndDeleteImg(deleteImgs);
   await dbUpdateOne('EntryCard', body, { where: { id: entryCardId } });
   await dbUpdateOne('AlbumConfig', { entryCards: entryCardList }, { where: { id: albumObj.id } });
@@ -649,6 +779,7 @@ const deleteEntryCard = async ctx => {
   _.remove(newEntryCard, o => {
     return o.id === entryCardId;
   });
+  await changeConfigJudge(albumCfg, 'entryCard', true);
   await dbDestroy('EntryCard', {
     where: { id: entryCardId }
   });
@@ -663,6 +794,13 @@ const deleteEntryCard = async ctx => {
   };
 };
 
+function checkDeleteEntryCard (albumObj, ctx) {
+  checkAlbumOwner(albumObj, ctx);
+  if (albumObj.albumType < nconf.get('albumLevel:middle')) {
+    ctx.throw(500, '请升级相册解锁词条卡片配置');
+  }
+}
+
 const sortEntryCard = async ctx => {
   ctx.verifyParams({
     entryCards: { type: 'array', itemType: 'int' }
@@ -671,6 +809,7 @@ const sortEntryCard = async ctx => {
   const cardIds = ctx.request.body.entryCards;
   const albumObj = await dbFindById('AlbumConfig', albumId);
   const newCards = checkSortEntryCard(albumObj, cardIds, ctx);
+  await changeConfigJudge(albumObj, 'entryCard', true);
   await dbUpdateOne('AlbumConfig', { entryCards: newCards }, {
     where: { id: albumId }
   });
@@ -693,13 +832,6 @@ function checkSortEntryCard (albumObj, cardIds, ctx) {
   return newCards;
 }
 
-function checkDeleteEntryCard (albumObj, ctx) {
-  checkAlbumOwner(albumObj, ctx);
-  if (albumObj.albumType < nconf.get('albumLevel:middle')) {
-    ctx.throw(500, '请升级相册解锁词条卡片配置');
-  }
-}
-
 const testmq = async ctx => {
   const albumId = ctx.params.albumId;
   albumLive(albumId, { a: 'lalala' });
@@ -714,20 +846,29 @@ export {
   listMyAlbumBrief,
   getAlbumDetail,
   deleteAlbum,
+  getBase,
   baseCfg,
+  getAlubmTag,
   addTag,
   updateTag,
   deleteTag,
   sortTag,
+  getStartPage,
   startPageCfg,
+  getBanners,
   addBanner,
   updateBanner,
   deleteBanner,
   sortBanner,
+  getInteractive,
   interactiveCfg,
+  getShare,
   shareCfg,
+  getTopAd,
   topAdCfg,
+  getBottomAd,
   bottomAdCfg,
+  getEntryCfg,
   entryCfg,
   addEntryCard,
   updateEntryCard,
@@ -746,8 +887,12 @@ function getAlbumAccess (albumType, field) {
   return nconf.get(`albumAccess:${albumType}:${field}`);
 }
 
-function changeConfigJudge (obj, data, key, bool) {
-  data.configJudge = obj.configJudge;
-  data.configJudge[key] = bool;
-  return data;
+async function changeConfigJudge (obj, key, bool) {
+  const configJudge = obj.configJudge;
+  if (configJudge[key] !== bool) {
+    configJudge[key] = bool;
+    await dbUpdateOne('AlbumConfig', { configJudge }, {
+      where: { id: obj.id }
+    });
+  }
 }

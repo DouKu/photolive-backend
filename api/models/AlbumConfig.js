@@ -111,9 +111,10 @@ export default (sequelize, DataTypes) => {
         allowNull: false,
         defaultValue: {
           base: false,
-          tag: true,
+          tag: false,
           startPage: false,
           banner: false,
+          interactive: false,
           share: false,
           puzzle: false,
           entryCard: false,

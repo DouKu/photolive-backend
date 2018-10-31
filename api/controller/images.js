@@ -44,6 +44,9 @@ async function checkUploadImg (body, album, ctx) {
   }
   if (!body.type || body.type === nconf.get('imgTyp').img) {
     if (!body.tagId) ctx.throw(400, '缺少图片标签');
+    const tagInfo = await dbFindById('Tags', body.tagId);
+    if (!tagInfo) ctx.throw(400, '标签不存在');
+    if (tagInfo.albumId !== album.id) ctx.throw(400, '不属于该相册的标签');
   }
   const fSize = getFsize(body.origin);
   if (fSize + album.storeUse >= album.store) {

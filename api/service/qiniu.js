@@ -5,13 +5,6 @@ import qiniu from 'qiniu';
 import nconf from 'nconf';
 import crypto from 'crypto';
 
-const bucket = nconf.get('qiniu').Bucket;
-const accessKey = nconf.get('qiniu').ACCESS_KEY;
-const secretKey = nconf.get('qiniu').SECRET_KEY;
-const mac = new qiniu.auth.digest.Mac(accessKey, secretKey);
-const config = new qiniu.conf.Config();
-config.zone = qiniu.zone.Zone_z2;
-
 // 写入目录
 const mkdirsSync = (dirname) => {
   if (fs.existsSync(dirname)) {
@@ -30,11 +23,16 @@ function getSuffix (fileName) {
 }
 
 // 重命名
-function Rename (fileName) {
-  return Math.random().toString(16).substr(2) + '.' + getSuffix(fileName);
-}
+// function Rename (fileName) {
+//   return Math.random().toString(16).substr(2) + '.' + getSuffix(fileName);
+// }
 
-function getName () {
+function getName (fileName) {
+  return 'upload_' + crypto.createHash('md5')
+    .update((Date.now() + Math.floor(Math.random() * 10).toString()))
+    .digest('hex') + '.' + getSuffix(fileName);
+}
+function getNameBase64 () {
   return 'upload_' + crypto.createHash('md5')
     .update((Date.now() + Math.floor(Math.random() * 10).toString()))
     .digest('hex');
@@ -55,6 +53,12 @@ function removeTemImage (path) {
  * @param {文件名} fileName
  */
 const upToQiniu = (localFile, key) => {
+  const bucket = nconf.get('qiniu').Bucket;
+  const accessKey = nconf.get('qiniu').ACCESS_KEY;
+  const secretKey = nconf.get('qiniu').SECRET_KEY;
+  const mac = new qiniu.auth.digest.Mac(accessKey, secretKey);
+  const config = new qiniu.conf.Config();
+  config.zone = qiniu.zone.Zone_z2;
   const options = {
     scope: bucket,
     returnBody: '{"key":"$(key)","fsize":$(fsize)}'
@@ -67,7 +71,7 @@ const upToQiniu = (localFile, key) => {
   const putExtra = new qiniu.form_up.PutExtra();
   // 文件上传
   return new Promise((resolve, reject) => {
-    formUploader.putFile(uploadToken, null, localFile, putExtra, function (respErr,
+    formUploader.putFile(uploadToken, key, localFile, putExtra, function (respErr,
       respBody, respInfo) {
       if (respErr) {
         reject(respErr);
@@ -87,12 +91,13 @@ function uploadFile (ctx, options) {
   const fileType = options.fileType;
   const filePath = path.join(options.path, fileType);
   const confirm = mkdirsSync(filePath);
+  console.log(filePath);
   if (!confirm) {
     return;
   }
   return new Promise((resolve, reject) => {
     _emmiter.on('file', function (fieldname, file, filename, encoding, mimetype) {
-      const fileName = Rename(filename);
+      const fileName = getName(filename);
       const saveTo = path.join(path.join(filePath, fileName));
       file.pipe(fs.createWriteStream(saveTo));
       file.on('end', function () {
@@ -121,7 +126,7 @@ function upload64 (ctx, options) {
   // 接收前台POST过来的base64
   const imgData = ctx.request.body.data;
   // 过滤data:URL
-  const fileName = getName();
+  const fileName = getNameBase64();
   const saveTo = path.join(path.join(filePath, fileName));
   const base64Data = imgData.replace(/^data:image\/\w+;base64,/, '');
   const dataBuffer = Buffer.from(base64Data, 'base64');
@@ -140,6 +145,12 @@ function upload64 (ctx, options) {
 };
 
 function fileStat (key) {
+  const bucket = nconf.get('qiniu').Bucket;
+  const accessKey = nconf.get('qiniu').ACCESS_KEY;
+  const secretKey = nconf.get('qiniu').SECRET_KEY;
+  const mac = new qiniu.auth.digest.Mac(accessKey, secretKey);
+  const config = new qiniu.conf.Config();
+  config.zone = qiniu.zone.Zone_z2;
   const bucketManager = new qiniu.rs.BucketManager(mac, config);
   return new Promise((resolve, reject) => {
     bucketManager.stat(bucket, key, function (err, respBody, respInfo) {
@@ -170,6 +181,12 @@ async function getFstat (url) {
 }
 
 function deleteFile (key) {
+  const bucket = nconf.get('qiniu').Bucket;
+  const accessKey = nconf.get('qiniu').ACCESS_KEY;
+  const secretKey = nconf.get('qiniu').SECRET_KEY;
+  const mac = new qiniu.auth.digest.Mac(accessKey, secretKey);
+  const config = new qiniu.conf.Config();
+  config.zone = qiniu.zone.Zone_z2;
   const bucketManager = new qiniu.rs.BucketManager(mac, config);
   return new Promise((resolve, reject) => {
     bucketManager.delete(bucket, key, function (err, respBody, respInfo) {

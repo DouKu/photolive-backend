@@ -139,7 +139,7 @@ const addTag = async ctx => {
     title: 'string'
   });
   const title = ctx.request.body.title;
-  const albumId = ctx.params.albumId;
+  const albumId = Number(ctx.params.albumId);
   const album = await dbFindOne('AlbumConfig', {
     where: { id: albumId }
   });

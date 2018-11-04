@@ -1,14 +1,6 @@
 import { Models } from '../../config/sequelize';
 import _ from 'lodash';
 
-const baseParam = {
-  raw: true
-};
-
-const updateParam = {
-  returning: true
-};
-
 const dbCreate = async (model, data) => {
   const val = await Models[model].create(data);
   return val;
@@ -23,6 +15,7 @@ const dbFindById = async (model, id) => {
 };
 
 const dbFindOne = async (model, filter) => {
+  const baseParam = { raw: true };
   const fullParam = Object.assign(baseParam, filter);
   const val = await Models[model].findOne(fullParam);
   return val;
@@ -34,6 +27,7 @@ const dbFindAll = async (model, filter) => {
 };
 
 const dbUpdateOne = async (model, newData, filter) => {
+  const updateParam = { returning: true };
   const fullParam = Object.assign(updateParam, filter);
   const val = await Models[model].update(newData, fullParam);
   if (val[0]) {
@@ -43,6 +37,7 @@ const dbUpdateOne = async (model, newData, filter) => {
 };
 
 const dbUpdate = async (model, newData, filter) => {
+  const updateParam = { returning: true };
   const fullParam = Object.assign(updateParam, filter);
   const val = await Models[model].update(newData, fullParam);
   return val;

@@ -29,12 +29,12 @@ export default (sequelize, DataTypes) => {
       name: {
         type: STRING(50),
         allowNull: false,
-        defaultValue: ''
+        defaultValue: nconf.get('initAlbumName')
       }, // 活动名(相册名)
       avatar: {
         type: STRING(512),
         allowNull: false,
-        defaultValue: ''
+        defaultValue: nconf.get('initAlbumAvatar')
       }, // 相册封面图
       activityTime: {
         type: BIGINT,

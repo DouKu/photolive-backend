@@ -4,6 +4,7 @@ export default [
     account: '123456789',
     email: '123456789@photolive.xyz',
     password: '123456789',
+    isInteral: 1,
     nickname: 'user1'
   },
   {
@@ -11,6 +12,7 @@ export default [
     account: '987654321',
     email: '987654321@photolive.xyz',
     password: '123456789',
+    isInteral: 1,
     nickname: 'user2'
   },
   {
@@ -18,6 +20,7 @@ export default [
     account: '111111111',
     email: '111111111@photolive.xyz',
     password: '123456789',
+    isInteral: 1,
     nickname: 'user3'
   }
 ];

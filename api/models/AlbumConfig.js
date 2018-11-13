@@ -9,8 +9,7 @@ export default (sequelize, DataTypes) => {
     {
       id: {
         type: BIGINT,
-        primaryKey: true,
-        autoIncrement: true
+        primaryKey: true
       },
       userId: {
         type: INTEGER,

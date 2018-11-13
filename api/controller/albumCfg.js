@@ -1,6 +1,5 @@
 'use strict';
 import _ from 'lodash';
-import moment from 'moment';
 import nconf from 'nconf';
 import {
   dbCreate, dbFindAll, dbFindOne, dbFindById,
@@ -10,22 +9,59 @@ import { filterLevelField } from '../service/album';
 import { albumLive } from '../service/mq';
 import { getFsize } from '../service/qiniu';
 import { checkAndDeleteImg, getFileKey } from '../service/image';
+import { getDaysSecond } from '../service/mtime';
 
-// 添加相册
+// 添加相册（不用给钱版）
 const addAlbum = async ctx => {
   ctx.verifyParams({
-    name: 'string',
-    avatar: { type: 'string', required: false }
+    userId: 'int',
+    albumType: 'int',
+    themeId: 'int'
   });
   const body = ctx.request.body;
-  body.userId = ctx.state.userMess.id;
-  body.expiredAt = moment().add(1, 'months').format();
-  await dbCreate(body);
+  await checkAddAlbum(ctx.state.userMess.id, ctx);
+  const newAlbum = {
+    expiredAt: Date.now() + getDaysSecond(30),
+    userId: body.userId,
+    albumType: body.albumType
+  };
+  const newAlbumData = await dbCreate('Album', newAlbum);
+  const newTag = await dbCreate('Tag', {
+    albumId: newAlbumData.id,
+    title: nconf.get('initTagTitle')
+  });
+  const newEntry = await dbCreate('Entry', {
+    albumId: newAlbumData.id
+  });
+  const newAlbumConfig = {
+    id: newAlbumData.id,
+    userId: body.userId,
+    albumType: body.albumType,
+    tags: [{
+      id: newTag.id,
+      title: newTag.title
+    }]
+  };
+  const newAlbumConfigData = await dbCreate('AlbumConfig', newAlbumConfig);
+  const result = {
+    album: Object.assign(newAlbumData, newAlbumConfigData),
+    Entry: newEntry
+  };
   ctx.body = {
     code: 200,
-    success: true
+    data: result
   };
 };
+
+async function checkAddAlbum (data, ctx) {
+  const user = await dbFindById('Users', data.userId);
+  if (user.isInternal === 0) {
+    ctx.throw(403, '没有权限');
+  }
+  if (nconf.get(`albumAccess:${data.albumType}`) === undefined) {
+    ctx.throw(400, '相册等级不存在');
+  }
+}
 
 const listMyAlbumBrief = async ctx => {
   let data = await dbFindAll('Albums', {

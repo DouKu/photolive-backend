@@ -2,7 +2,7 @@
 import crypto from 'crypto';
 import bcrypt from 'bcrypt';
 import nconf from 'nconf';
-import { STRING, INTEGER, BIGINT } from 'sequelize';
+import { STRING, INTEGER, BIGINT, SMALLINT } from 'sequelize';
 
 export default (sequelize, DataTypes) => {
   const Users = sequelize.define(
@@ -59,6 +59,11 @@ export default (sequelize, DataTypes) => {
         allowNull: false,
         defaultValue: '这个人很懒，什么都没有记录。。。'
       }, // 个性签名
+      isInteral: {
+        type: SMALLINT,
+        allowNull: false,
+        defaultValue: 0
+      }, // 是否内部号
       registerAt: {
         type: BIGINT,
         allowNull: false,

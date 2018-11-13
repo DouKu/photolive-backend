@@ -97,6 +97,7 @@ function uploadFile (ctx, options) {
   }
   return new Promise((resolve, reject) => {
     _emmiter.on('file', function (fieldname, file, filename, encoding, mimetype) {
+      console.log('====busboy on file=======');
       const fileName = getName(filename);
       const saveTo = path.join(path.join(filePath, fileName));
       file.pipe(fs.createWriteStream(saveTo));
